@@ -1,0 +1,2357 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MASG Arch Viz Estimator Pro | Myanmar Architectural Solution Group</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#B3441E',
+              dark: '#8E3213',
+              light: '#D3572C',
+              soft: '#FCF8F6',
+              border: '#E8C5B8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&family=Padauk:wght@400;700&family=Shippori+Mincho:wght@600;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- html2canvas & jsPDF for Direct PDF File Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+    .font-burmese {
+      font-family: 'Padauk', sans-serif;
+    }
+    .font-mincho {
+      font-family: 'Shippori Mincho', 'Noto Serif JP', serif;
+    }
+
+    /* Traditional Hanko & Corporate Seal */
+    .hanko-stamp {
+      width: 68px;
+      height: 68px;
+      border: 2px solid #B3441E;
+      border-radius: 6px;
+      color: #B3441E;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Shippori Mincho', serif;
+      font-weight: 700;
+      font-size: 11px;
+      line-height: 1.15;
+      letter-spacing: 1px;
+      position: relative;
+      opacity: 0.92;
+      transform: rotate(-2deg);
+      user-select: none;
+      box-shadow: 0 0 2px rgba(179, 68, 30, 0.25);
+    }
+    .hanko-stamp::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border: 1px solid rgba(179, 68, 30, 0.45);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 8mm 10mm 8mm 10mm;
+    }
+
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .page-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      #quotation-paper {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      .break-inside-avoid {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .print-page-break {
+        page-break-before: always;
+        break-before: page;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand selection:text-white">
+
+  <!-- Reusable Exact MASG Transparent Vector Logo Definition -->
+  <svg class="hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <clipPath id="masg-outer-clip">
+        <rect x="0" y="0" width="1000" height="1000" rx="115" ry="115" />
+      </clipPath>
+      <g id="masg-logo-vector">
+        <g clip-path="url(#masg-outer-clip)" fill="#A93F1D">
+          <!-- M (Top-Left) -->
+          <rect x="0" y="0" width="124" height="465" />
+          <polygon points="144,0 330,0 237,240" />
+          <rect x="347" y="0" width="124" height="465" />
+
+          <!-- A (Top-Right) -->
+          <rect x="529" y="0" width="118" height="465" />
+          <rect x="670" y="0" width="188" height="112" />
+          <rect x="670" y="236" width="188" height="106" />
+          <rect x="878" y="0" width="122" height="465" />
+
+          <!-- S (Bottom-Left) -->
+          <rect x="0" y="522" width="471" height="122" />
+          <polygon points="0,664 238,664 338,756 0,756" />
+          <polygon points="134,773 471,773 471,865 234,865" />
+          <rect x="0" y="884" width="471" height="116" />
+
+          <!-- G (Bottom-Right) -->
+          <rect x="529" y="522" width="118" height="478" />
+          <rect x="670" y="522" width="188" height="122" />
+          <rect x="878" y="522" width="122" height="122" />
+          <rect x="670" y="773" width="188" height="79" />
+          <rect x="670" y="872" width="188" height="128" />
+          <rect x="878" y="773" width="122" height="227" />
+        </g>
+        <!-- Center Horizontal Band: ARCHITECTURE & DESIGN -->
+        <text x="500" y="506" text-anchor="middle" textLength="992" lengthAdjust="spacing" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="37" fill="#A93F1D">ARCHITECTURE &amp; DESIGN</text>
+      </g>
+    </defs>
+  </svg>
+
+  <!-- Hidden file input for optional custom PNG logo replacement -->
+  <input type="file" id="custom-logo-upload" accept="image/*" class="hidden" onchange="handleLogoUpload(event)" />
+
+  <!-- TOP APP BAR -->
+  <header class="no-print sticky top-0 z-40 bg-slate-900 border-b border-slate-800 text-white px-4 py-2.5 sm:px-6 shadow-md">
+    <div class="max-w-[1720px] mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Title & Branding -->
+      <div class="flex items-center space-x-3">
+        <div onclick="triggerLogoUpload()" title="Click to upload custom logo PNG (Transparent Background)" class="w-10 h-10 shrink-0 cursor-pointer flex items-center justify-center transition hover:scale-105">
+          <svg viewBox="0 0 1000 1000" class="masg-default-svg w-full h-full bg-transparent">
+            <use href="#masg-logo-vector"></use>
+          </svg>
+          <img class="masg-custom-img hidden w-full h-full object-contain bg-transparent" alt="MASG Logo" />
+        </div>
+        <div>
+          <h1 class="text-sm sm:text-base font-semibold tracking-wide flex items-center gap-2">
+            <span>MASG Arch Viz Estimator Pro</span>
+            <span class="text-xs px-2 py-0.5 rounded bg-brand/20 text-brand-light border border-brand/40 font-normal">Commercial Architecture Visualization</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex items-center flex-wrap gap-2 text-xs sm:text-sm">
+        <!-- Currency Toggle -->
+        <div class="flex items-center bg-slate-800 rounded border border-slate-700 p-0.5">
+          <button id="btn-curr-jpy" onclick="setCurrency('JPY')" class="px-2.5 py-1 rounded font-medium transition bg-slate-700 text-white shadow-xs">¥ JPY</button>
+          <button id="btn-curr-usd" onclick="setCurrency('USD')" class="px-2.5 py-1 rounded font-medium transition text-slate-400 hover:text-white">$ USD</button>
+        </div>
+
+        <!-- Language Toggle -->
+        <div class="flex items-center bg-slate-800 rounded border border-slate-700 p-0.5">
+          <button id="btn-lang-ja" onclick="setLang('ja')" class="px-2.5 py-1 rounded font-medium transition bg-slate-700 text-white shadow-xs">日本語</button>
+          <button id="btn-lang-en" onclick="setLang('en')" class="px-2.5 py-1 rounded font-medium transition text-slate-400 hover:text-white">English</button>
+        </div>
+
+        <!-- Reset, Print & Direct PDF Download -->
+        <button onclick="resetDefaults()" title="Reset to default sample" class="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        </button>
+        <button onclick="window.print()" title="Print via System Dialog" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium transition active:scale-95">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          <span data-i18n="printBtn">印刷 / Print</span>
+        </button>
+        <button id="btn-export-pdf" onclick="exportToPDF()" class="flex items-center gap-2 px-4 py-1.5 rounded-md bg-brand hover:bg-brand-light text-white font-semibold shadow-sm transition active:scale-95">
+          <i data-lucide="file-down" class="w-4 h-4"></i>
+          <span id="txt-export-pdf" data-i18n="exportPdf">PDFダウンロード</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN DUAL COLUMN WORKSPACE -->
+  <main class="flex-1 max-w-[1720px] w-full mx-auto p-3 sm:p-6 grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+
+    <!-- LEFT COLUMN: CONFIGURATOR (5 cols on xl) -->
+    <aside class="no-print xl:col-span-5 space-y-5">
+      
+      <!-- OVERVIEW & PURPOSE BANNER (Trilingual) -->
+      <section class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-lg p-4 border border-slate-700 shadow-sm relative overflow-hidden">
+        <div class="flex items-start gap-3.5">
+          <div onclick="triggerLogoUpload()" title="Click to upload custom logo PNG" class="w-12 h-12 shrink-0 cursor-pointer flex items-center justify-center transition hover:scale-105">
+            <svg viewBox="0 0 1000 1000" class="masg-default-svg w-full h-full bg-transparent">
+              <use href="#masg-logo-vector"></use>
+            </svg>
+            <img class="masg-custom-img hidden w-full h-full object-contain bg-transparent" alt="MASG Logo" />
+          </div>
+          <div class="space-y-1.5">
+            <h2 class="text-xs font-bold tracking-wider uppercase text-brand-light flex items-center gap-1.5">
+              <span>Overview & Purpose</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            </h2>
+            <!-- Japanese Description (1st) -->
+            <p class="text-[11px] leading-relaxed text-slate-100">
+              Myanmar Architectural Solution Group (MASG) のCG・レンダリングサービスの料金を簡単かつ迅速に計算するためにPrice Estimator Proを作成いたしました。サービス内容を詳細に選択して見積金額を確認できます。
+            </p>
+            <!-- English Description (2nd) -->
+            <p class="text-[10.5px] leading-relaxed text-slate-300">
+              This Price Estimator Pro is designed to quickly and easily calculate pricing for Myanmar Architectural Solution Group (MASG)'s CG/Rendering services. You can select specific service options in detail to estimate the total costs.
+            </p>
+            <!-- Myanmar Description (3rd) -->
+            <p class="text-[11px] leading-relaxed text-slate-400 font-burmese">
+              Myanmar Architectural Solution Group (MASG) ၏ CG/Rendering ဝန်ဆောင်မှုနှုန်းထားများကို လွယ်ကူလျင်မြန်စွာ တွက်ချက်သိရှိနိုင်ရန် Price Estimator Pro ကို ဖန်တီးထားပါသည်။ ဝန်ဆောင်မှုအမျိုးအစားများကို တစ်ခုချင်းစီ အသေးစိတ်ရွေးချယ်ကာ ကျသင့်ငွေများကို ခန့်မှန်းသိရှိနိုင်မည်ဖြစ်ပါသည်။
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 1: PROJECT & CLIENT INFORMATION -->
+      <section class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 sm:p-5">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+          <h2 class="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <i data-lucide="file-text" class="w-4 h-4 text-brand"></i>
+            <span data-i18n="sec1Title">Section 1: Project & Client Information</span>
+          </h2>
+          <span class="text-[11px] text-slate-400 font-mono">01 / 05</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <!-- Project Title -->
+          <div class="sm:col-span-2">
+            <label class="block font-medium text-slate-700 mb-1" data-i18n="lblProjectTitle">Project Title/Name (件名)</label>
+            <input type="text" id="cfg-projectTitle" value="（仮称）渋谷神南三丁目商業複合施設 CGビジュアライゼーション業務" oninput="updateDocument()" class="w-full px-3 py-1.5 border border-slate-300 rounded text-slate-800 focus:outline-none focus:border-brand">
+          </div>
+
+          <!-- Company / Developer -->
+          <div class="sm:col-span-2">
+            <label class="block font-medium text-slate-700 mb-1" data-i18n="lblCompany">Company/Developer (発注元・御中)</label>
+            <input type="text" id="cfg-company" value="株式会社 大林都市設計コンサルタンツ 御中" oninput="updateDocument()" class="w-full px-3 py-1.5 border border-slate-300 rounded text-slate-800 focus:outline-none focus:border-brand">
+          </div>
+
+          <!-- Project Objective -->
+          <div class="sm:col-span-2">
+            <label class="block font-medium text-slate-700 mb-1" data-i18n="lblObjective">Project Objective (業務目的)</label>
+            <input type="text" id="cfg-objective" value="商業施設リーシングプロモーション・行政協議提出用" oninput="updateDocument()" class="w-full px-3 py-1.5 border border-slate-300 rounded text-slate-800 focus:outline-none focus:border-brand">
+          </div>
+
+          <!-- Building Type -->
+          <div>
+            <label class="block font-medium text-slate-700 mb-1" data-i18n="lblBuildingType">Building Type (建物用途)</label>
+            <select id="cfg-buildingType" onchange="handleBuildingTypeChange()" class="w-full px-3 py-1.5 border border-slate-300 rounded text-slate-800 focus:outline-none focus:border-brand bg-white">
+              <option value="Villa">Villa</option>
+              <option value="Mansion">Mansion</option>
+              <option value="Residential">Residential</option>
+              <option value="Department Store">Department Store</option>
+              <option value="Mixed Used">Mixed Used</option>
+              <option value="Commercial" selected>Commercial</option>
+              <option value="Factory">Factory</option>
+              <option value="Showroom">Showroom</option>
+              <option value="Office">Office</option>
+              <option value="Hotel">Hotel</option>
+              <option value="Hospital">Hospital</option>
+              <option value="Educational">Educational</option>
+              <option value="Cultural">Cultural</option>
+              <option value="Infrastructure">Infrastructure</option>
+              <option value="Residential Complex">Residential Complex</option>
+              <option value="Government Complex">Government Complex</option>
+              <option value="custom">Type in…</option>
+            </select>
+            <input type="text" id="cfg-buildingTypeCustom" placeholder="Enter custom building type..." oninput="updateDocument()" class="hidden mt-1.5 w-full px-3 py-1.5 border border-brand rounded text-slate-800 focus:outline-none bg-brand-soft/20">
+          </div>
+
+          <!-- Building Floor Area -->
+          <div>
+            <label class="block font-medium text-slate-700 mb-1" data-i18n="lblFloorArea">Building Floor Area (延床面積)</label>
+            <select id="cfg-floorArea" onchange="handleFloorAreaChange()" class="w-full px-3 py-1.5 border border-slate-300 rounded text-slate-800 focus:outline-none focus:border-brand bg-white">
+              <option value="Small: < 500 sqm">Small: &lt; 500 sqm</option>
+              <option value="Medium: 500 – 2,000 sqm">Medium: 500 – 2,000 sqm</option>
+              <option value="Large: 2,000 – 5,000 sqm" selected>Large: 2,000 – 5,000 sqm</option>
+              <option value="Extra Large: 5,000 – 10,000 sqm">Extra Large: 5,000 – 10,000 sqm</option>
+              <option value="Mega: > 10,000 sqm">Mega: &gt; 10,000 sqm</option>
+              <option value="custom">Type in…</option>
+            </select>
+            <input type="text" id="cfg-floorAreaCustom" placeholder="Enter custom floor area..." oninput="updateDocument()" class="hidden mt-1.5 w-full px-3 py-1.5 border border-brand rounded text-slate-800 focus:outline-none bg-brand-soft/20">
+          </div>
+
+          <!-- Total No. of Floor -->
+          <div>
+            <label class="block font-medium text-slate-700 mb-1" data-i18n="lblTotalFloors">Total No. of Floor (階数)</label>
+            <select id="cfg-totalFloors" onchange="handleTotalFloorsChange()" class="w-full px-3 py-1.5 border border-slate-300 rounded text-slate-800 focus:outline-none focus:border-brand bg-white">
+              <option value="1F">1</option>
+              <option value="2F">2</option>
+              <option value="3F">3</option>
+              <option value="4F">4</option>
+              <option value="5F" selected>5</option>
+              <option value="6F">6</option>
+              <option value="7F">7</option>
+              <option value="8F">8</option>
+              <option value="custom">Type in…</option>
+            </select>
+            <input type="text" id="cfg-totalFloorsCustom" placeholder="Enter custom total floors..." oninput="updateDocument()" class="hidden mt-1.5 w-full px-3 py-1.5 border border-brand rounded text-slate-800 focus:outline-none bg-brand-soft/20">
+          </div>
+
+          <!-- Tentative Delivery Date -->
+          <div>
+            <label class="block font-medium text-slate-700 mb-1" data-i18n="lblDeliveryDate">Tentative Delivery Date (納品希望日)</label>
+            <input type="date" id="cfg-deliveryDate" onchange="updateDocument()" class="w-full px-3 py-1.5 border border-slate-300 rounded text-slate-800 focus:outline-none focus:border-brand">
+          </div>
+
+          <!-- Price Estimate Issue Date -->
+          <div>
+            <label class="block font-medium text-slate-700 mb-1" data-i18n="lblIssueDate">Price Estimate Issue Date (発行日)</label>
+            <input type="date" id="cfg-issueDate" onchange="updateDocument()" class="w-full px-3 py-1.5 border border-slate-300 rounded text-slate-800 focus:outline-none focus:border-brand">
+          </div>
+
+          <!-- Prepared by -->
+          <div>
+            <label class="block font-medium text-slate-700 mb-1" data-i18n="lblPreparedBy">Prepared by (作成担当・CG Director)</label>
+            <input type="text" id="cfg-preparedBy" value="Kaung Htet San (CG Director)" oninput="updateDocument()" class="w-full px-3 py-1.5 border border-slate-300 rounded text-slate-800 focus:outline-none focus:border-brand">
+          </div>
+
+          <!-- Quotation Ref No. (Auto generated) -->
+          <div class="sm:col-span-2">
+            <label class="block font-medium text-slate-700 mb-1 flex justify-between items-center">
+              <span data-i18n="lblRefNo">Ref No. (見積番号 - 自動生成)</span>
+              <button onclick="regenerateRefNo()" type="button" class="text-[10px] text-brand hover:underline flex items-center gap-1">
+                <i data-lucide="refresh-cw" class="w-3 h-3"></i> <span data-i18n="btnRegenRef">Re-generate</span>
+              </button>
+            </label>
+            <input type="text" id="cfg-refNo" value="MASG-2026-8812" oninput="updateDocument()" class="w-full px-3 py-1.5 border border-slate-300 rounded text-slate-800 focus:outline-none focus:border-brand font-mono font-semibold bg-slate-50">
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: PRODUCT TYPE (Primary Gate - 7 Products) -->
+      <section class="bg-white rounded-lg border-2 border-brand/40 shadow-xs p-4 sm:p-5 relative overflow-hidden">
+        <div class="absolute top-0 left-0 h-1.5 w-full bg-brand"></div>
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3.5">
+          <h2 class="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
+            <i data-lucide="layout-grid" class="w-4 h-4 text-brand"></i>
+            <span data-i18n="sec2Title">Section 2: Product Type</span>
+            <span class="text-brand font-bold text-base leading-none">*</span>
+          </h2>
+          <span class="text-[11px] text-slate-500 font-mono">02 / 05</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <!-- 1. Still Image -->
+          <label class="product-type-card cursor-pointer flex items-start gap-2.5 p-3 rounded-md border border-slate-200 hover:border-brand hover:bg-brand-soft/50 transition">
+            <input type="radio" name="productType" value="still" checked onchange="changeProductType('still')" class="accent-brand w-4 h-4 mt-0.5">
+            <div>
+              <span class="font-bold text-slate-800 block text-xs">1. Still Image</span>
+              <span class="text-[10.5px] text-slate-500 block leading-snug">Exterior Commercial, Exterior Residential, Interior Commercial, Interior Residential, Exterior Aerial</span>
+            </div>
+          </label>
+
+          <!-- 2. 360 VR image -->
+          <label class="product-type-card cursor-pointer flex items-start gap-2.5 p-3 rounded-md border border-slate-200 hover:border-brand hover:bg-brand-soft/50 transition">
+            <input type="radio" name="productType" value="vr360" onchange="changeProductType('vr360')" class="accent-brand w-4 h-4 mt-0.5">
+            <div>
+              <span class="font-bold text-slate-800 block text-xs">2. 360 VR image</span>
+              <span class="text-[10.5px] text-slate-500 block leading-snug">Interior Commercial, Interior Residential</span>
+            </div>
+          </label>
+
+          <!-- 3. Before/After 360 VR image -->
+          <label class="product-type-card cursor-pointer flex items-start gap-2.5 p-3 rounded-md border border-slate-200 hover:border-brand hover:bg-brand-soft/50 transition">
+            <input type="radio" name="productType" value="beforeAfterVr" onchange="changeProductType('beforeAfterVr')" class="accent-brand w-4 h-4 mt-0.5">
+            <div>
+              <span class="font-bold text-slate-800 block text-xs">3. Before/After 360 VR image</span>
+              <span class="text-[10.5px] text-slate-500 block leading-snug">Exterior Commercial, Exterior Residential, Interior Commercial, Interior Residential, Exterior Aerial</span>
+            </div>
+          </label>
+
+          <!-- 4. Photomatch Still image -->
+          <label class="product-type-card cursor-pointer flex items-start gap-2.5 p-3 rounded-md border border-slate-200 hover:border-brand hover:bg-brand-soft/50 transition">
+            <input type="radio" name="productType" value="photomatch" onchange="changeProductType('photomatch')" class="accent-brand w-4 h-4 mt-0.5">
+            <div>
+              <span class="font-bold text-slate-800 block text-xs">4. Photomatch Still image</span>
+              <span class="text-[10.5px] text-slate-500 block leading-snug">Exterior Commercial, Exterior Residential, Interior Commercial, Interior Residential</span>
+            </div>
+          </label>
+
+          <!-- 5. Animation -->
+          <label class="product-type-card cursor-pointer flex items-start gap-2.5 p-3 rounded-md border border-slate-200 hover:border-brand hover:bg-brand-soft/50 transition">
+            <input type="radio" name="productType" value="animation" onchange="changeProductType('animation')" class="accent-brand w-4 h-4 mt-0.5">
+            <div>
+              <span class="font-bold text-slate-800 block text-xs">5. Animation</span>
+              <span class="text-[10.5px] text-slate-500 block leading-snug">Walkthrough, Cinematic, Commercial, Residential, D5 or Unreal</span>
+            </div>
+          </label>
+
+          <!-- 6. Shapespark -->
+          <label class="product-type-card cursor-pointer flex items-start gap-2.5 p-3 rounded-md border border-slate-200 hover:border-brand hover:bg-brand-soft/50 transition">
+            <input type="radio" name="productType" value="shapespark" onchange="changeProductType('shapespark')" class="accent-brand w-4 h-4 mt-0.5">
+            <div>
+              <span class="font-bold text-slate-800 block text-xs">6. Shapespark</span>
+              <span class="text-[10.5px] text-slate-500 block leading-snug">Virtual Walkthrough, Commercial, Residential & Factory</span>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <!-- SECTION 3: DATA ANALYSIS AND BASE 3D MODELLING -->
+      <section class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 sm:p-5">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+          <h2 class="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <i data-lucide="layers" class="w-4 h-4 text-brand"></i>
+            <span data-i18n="sec3Title">Section 3: Data Analysis and Base 3D Modelling</span>
+          </h2>
+          <span class="text-[11px] text-slate-400 font-mono">03 / 05</span>
+        </div>
+
+        <p class="text-[11px] text-slate-500 mb-3 italic" data-i18n="sec3Hint">
+          * This section links to Section 2 for product-specific pricing variation.
+        </p>
+
+        <div class="space-y-3.5 text-xs">
+          <!-- Fixed Data Analysis -->
+          <div class="p-2.5 rounded bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <div>
+              <div class="font-semibold text-slate-800" data-i18n="dataAnalysisTitle">Data Analysis (Fixed Price)</div>
+              <div class="text-[10.5px] text-slate-500" data-i18n="dataAnalysisDesc">Data collecting and analyzing to understand client requirements and assets (10,000 JPY)</div>
+            </div>
+            <div class="font-mono font-bold text-slate-800 bg-white px-2 py-1 rounded border border-slate-200">
+              10,000 JPY
+            </div>
+          </div>
+
+          <!-- Base 3D Modelling Dropdown -->
+          <div>
+            <label class="block font-medium text-slate-700 mb-1" data-i18n="baseModelingLabel">
+              Base 3D modelling (Include the base structural frame of the building, including the wall, floor and windows)
+            </label>
+            <select id="cfg-baseModelLevel" onchange="updateDocument()" class="w-full px-3 py-2 border border-slate-300 rounded text-slate-800 focus:outline-none focus:border-brand bg-white text-xs">
+              <!-- Dynamically populated to reflect Section 2 prices -->
+            </select>
+          </div>
+
+          <!-- Adding Architectural Details Checkbox -->
+          <div class="p-2.5 rounded bg-brand-soft/40 border border-brand-border/60">
+            <label class="flex items-start gap-2.5 cursor-pointer">
+              <input type="checkbox" id="cfg-archDetails" checked onchange="updateDocument()" class="accent-brand w-4 h-4 mt-0.5">
+              <div class="flex-1">
+                <div class="flex justify-between items-center">
+                  <span class="font-semibold text-slate-800" data-i18n="archDetailsTitle">Adding Architectural Details (CAD, DWG, PDF)</span>
+                  <span id="badge-archDetailsFee" class="font-mono font-bold text-brand text-[11px]">+15,000 JPY</span>
+                </div>
+                <p class="text-[10.5px] text-slate-500 mt-0.5" data-i18n="archDetailsDesc">Curtain wall, louvers, lighting fixtures & fine structural ornamentation</p>
+              </div>
+            </label>
+          </div>
+
+          <!-- Consolidation Notice Banner -->
+          <div class="p-2 bg-slate-100 rounded text-[11px] text-slate-600 flex items-center gap-1.5 border border-slate-200">
+            <i data-lucide="info" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
+            <span data-i18n="consolidationNote">Note: Data Analysis, Base 3D Modeling, and adding Architectural Details (if checked) will be consolidated into a single itemized total on the final PDF quotation.</span>
+          </div>
+
+          <!-- Furniture Options -->
+          <div class="p-3 rounded-lg border border-slate-200 bg-slate-50/60 space-y-2.5">
+            <div class="font-semibold text-slate-800 flex items-center gap-1.5 text-xs">
+              <i data-lucide="armchair" class="w-3.5 h-3.5 text-brand"></i>
+              <span data-i18n="furnitureOptionsHeading">Furniture Options (Dropdown / Selection)</span>
+            </div>
+
+            <!-- Library Furniture -->
+            <div>
+              <label class="block text-[11px] font-medium text-slate-600 mb-0.5" data-i18n="lblLibraryFurn">Library Furniture Selection</label>
+              <select id="cfg-libraryFurniture" onchange="updateDocument()" class="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white text-xs">
+                <option value="standard">Standard Library Furniture (Client chooses from existing asset library) (+0 JPY)</option>
+                <option value="enhanced">Enhanced Library Furniture Selection (+10,000 JPY)</option>
+              </select>
+            </div>
+
+            <!-- Custom Loose Furniture -->
+            <div>
+              <label class="block text-[11px] font-medium text-slate-600 mb-0.5" data-i18n="lblCustomFurn">Custom Loose Furniture Modelling</label>
+              <select id="cfg-customFurniture" onchange="updateDocument()" class="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white text-xs">
+                <option value="none">None (Client provides fully furnished 3D data) (+0 JPY)</option>
+                <option value="basic">Basic Custom Loose Furniture (Simple bespoke pieces e.g., feature tables, reception counters) (+15,000 JPY)</option>
+                <option value="full">Full Custom Loose Furniture Modelling (Detailed bespoke furniture package per project type) (+30,000 JPY)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Schedule Dropdown with Tentative Delivery Date Reference -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="font-medium text-slate-700" data-i18n="scheduleLabel">Schedule (Dropdown menu)</label>
+              <span id="badge-deliveryRef" class="text-[10px] text-brand font-medium">approx. 10 business days</span>
+            </div>
+            <select id="cfg-schedule" onchange="updateDocument()" class="w-full px-3 py-2 border border-slate-300 rounded text-slate-800 focus:outline-none focus:border-brand bg-white text-xs">
+              <!-- Dynamically populated with accurate Section 2 rates -->
+            </select>
+            <p class="text-[10px] text-slate-400 mt-1 italic" data-i18n="scheduleFootnote">
+              * Note: The tentative working schedule will be included in the final PDF quotation. Delivery date may change accordingly to project scope.
+            </p>
+          </div>
+
+          <!-- Tax Toggle -->
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="cfg-taxToggle" checked onchange="updateDocument()" class="accent-brand w-4 h-4 rounded">
+              <span class="font-medium text-slate-700" data-i18n="taxToggle">消費税 10% を計上 (Include 10% JCT)</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: CG PRODUCTION OPTIONS -->
+      <section class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 sm:p-5">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-800 flex items-center gap-2">
+              <i data-lucide="sliders" class="w-4 h-4 text-brand"></i>
+              <span data-i18n="sec4Title">Section 4: CG Production Options</span>
+            </h2>
+            <p id="sec4-subtitle" class="text-[11px] text-slate-500">Still (Exterior, Interior Commercial & Residential)</p>
+          </div>
+          <span class="text-[11px] text-slate-400 font-mono">04 / 05</span>
+        </div>
+
+        <!-- Dynamic Container for Section 4 Items -->
+        <div id="sec4-views-container" class="space-y-4">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Actions Bar -->
+        <div id="sec4-actions-bar" class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+          <button id="btn-add-view" onclick="addViewItem()" type="button" class="flex items-center gap-1.5 px-3 py-1.5 bg-brand hover:bg-brand-light text-white rounded text-xs font-semibold shadow-xs transition active:scale-95">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span data-i18n="btnAddView">Add Another View / Cut (カット追加)</span>
+          </button>
+          <span id="sec4-bulk-note" class="text-[10px] text-emerald-700 font-medium">
+            * 2 views and above: 20% bulk discount applied!
+          </span>
+        </div>
+      </section>
+
+      <!-- SECTION 5: TERMS & PRODUCTION GUIDELINES CONTROLS -->
+      <section class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 sm:p-5">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+          <h2 class="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-4 h-4 text-brand"></i>
+            <span data-i18n="sec5Title">Section 5: Missing and incomplete Data surcharge</span>
+          </h2>
+          <span class="text-[11px] text-slate-400 font-mono">05 / 05</span>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <!-- Drone Photo Comp Checkbox -->
+          <div class="p-2.5 rounded bg-slate-50 border border-slate-200">
+            <label class="flex items-start gap-2.5 cursor-pointer">
+              <input type="checkbox" id="cfg-droneCompSurcharge" onchange="updateDocument()" class="accent-brand w-4 h-4 mt-0.5">
+              <div class="flex-1">
+                <div class="flex justify-between items-center">
+                  <span class="font-semibold text-slate-800" data-i18n="droneCompTitle">Missing and incomplete Data surcharge</span>
+                  <span id="badge-droneCompFee" class="font-mono font-bold text-brand text-[11px]">+20,000 JPY</span>
+                </div>
+                <p class="text-[10.5px] text-slate-500 mt-0.5" data-i18n="droneCompDesc">
+                  Compositing requires high-resolution site/drone photography with documented focal parameters and capture time; failure to provide these will incur an additional fee (+20,000 JPY).
+                </p>
+              </div>
+            </label>
+          </div>
+
+          <div class="text-[11px] text-slate-500 leading-relaxed bg-slate-50/50 p-2.5 rounded border border-slate-100 space-y-1">
+            <p class="font-medium text-slate-700" data-i18n="guidelineSummaryTitle">Appendix Note:</p>
+            <p data-i18n="appendixNoteText">The full Terms & Production Guidelines appear on the subsequent page (Page 2 Appendix) of the PDF quotation.</p>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- RIGHT COLUMN: OFFICIAL A4 JAPANESE / ENGLISH QUOTATION (PAGE 1 + PAGE 2 APPENDIX) -->
+    <section class="xl:col-span-7 flex justify-center">
+      <div class="page-container w-full max-w-[860px] transition-all space-y-8 print:space-y-0">
+        
+        <!-- PAGE 1: White Paper Quotation Surface -->
+        <div id="quotation-paper" class="bg-white rounded shadow-md border border-slate-200/80 p-8 sm:p-12 text-slate-900 relative">
+          
+          <!-- Sheet Header: Title and Meta with Transparent MASG Logo -->
+          <div class="flex items-center justify-between pb-4 mb-6 border-b-2 border-slate-900">
+            <!-- Brand Logo Left (Transparent Background) -->
+            <div class="flex items-center gap-3.5">
+              <div onclick="triggerLogoUpload()" title="Click to customize logo image if needed" class="w-16 h-16 shrink-0 cursor-pointer flex items-center justify-center bg-transparent">
+                <svg viewBox="0 0 1000 1000" class="masg-default-svg w-full h-full bg-transparent" xmlns="http://www.w3.org/2000/svg">
+                  <use href="#masg-logo-vector"></use>
+                </svg>
+                <img class="masg-custom-img hidden w-full h-full object-contain bg-transparent" alt="MASG Logo" />
+              </div>
+              <div>
+                <span class="text-sm font-bold tracking-wider text-brand font-mono">MASG</span>
+                <p class="text-[10.5px] text-slate-600 font-medium tracking-tight leading-none uppercase">Myanmar Architectural Solution Group</p>
+                <div class="mt-1.5 flex items-center gap-1.5">
+                  <span id="doc-product-badge" class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-900 text-white uppercase tracking-wider">
+                    STILL IMAGE
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Title Center-Right -->
+            <div class="text-right">
+              <h1 id="doc-main-title" class="text-2xl sm:text-3xl font-mincho font-bold tracking-[0.3em] text-slate-900">
+                御 見 積 書
+              </h1>
+              <p id="doc-sub-title" class="text-[10px] text-slate-500 tracking-widest mt-0.5 font-mono uppercase">
+                MASG Arch Viz Fee Proposal
+              </p>
+            </div>
+          </div>
+
+          <!-- Top Meta Grid: Client on Left, Studio on Right -->
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 pb-5 items-start">
+            
+            <!-- Left: Client Info & Greeting -->
+            <div class="sm:col-span-7 space-y-2">
+              <div class="border-b border-slate-300 pb-1.5 inline-block w-full">
+                <span id="doc-company" class="text-base sm:text-lg font-bold text-slate-900 block font-mincho">
+                  株式会社 大林都市設計コンサルタンツ 御中
+                </span>
+              </div>
+              <p id="doc-greeting" class="text-[11px] text-slate-600 leading-relaxed pt-1" data-i18n="greetingText">
+                平素は格別のお引き立てを賜り、厚く御礼申し上げます。<br>
+                ご依頼いただきました下記業務につきまして、下記の通り御見積申し上げます。ご査収の程よろしくお願い申し上げます。
+              </p>
+              
+              <!-- Subject / Project Box with All Section 1 Parameters -->
+              <div class="mt-3 bg-brand-soft border border-brand-border rounded p-2.5 text-xs space-y-1">
+                <div class="flex">
+                  <span class="text-slate-600 font-medium w-28 shrink-0" data-i18n="lblDocProject">件名 / Project:</span>
+                  <span id="doc-projectTitle" class="font-bold text-slate-900">（仮称）渋谷神南三丁目商業複合施設</span>
+                </div>
+                <div class="flex text-[11px] text-slate-600">
+                  <span class="w-28 shrink-0" data-i18n="lblDocObjective">業務目的 / Goal:</span>
+                  <span id="doc-objective" class="text-slate-800">商業施設リーシングプロモーション・行政協議提出用</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600 pt-0.5 border-t border-brand-border/40">
+                  <div>
+                    <span data-i18n="lblDocBldgType">建物用途:</span> <span id="doc-buildingType" class="text-slate-800 font-medium">Commercial</span>
+                  </div>
+                  <div>
+                    <span data-i18n="lblDocAreaFloors">規模:</span> <span id="doc-areaFloors" class="text-slate-800 font-medium">18,500 m² / 14F</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Studio Info & Hanko Stamp -->
+            <div class="sm:col-span-5 flex justify-between items-start text-xs space-y-1 sm:text-right sm:block relative">
+              <div class="space-y-0.5 text-slate-700">
+                <div class="font-mono text-[11px] text-slate-600">
+                  <span data-i18n="lblDocRef">Ref No:</span> <span id="doc-refNo" class="font-semibold text-slate-800 font-mono">MASG-2026-8812</span>
+                </div>
+                <div class="text-[11px] text-slate-600">
+                  <span data-i18n="lblDocIssueDate">発行日:</span> <span id="doc-issueDate" class="text-slate-800">2026年11月10日</span>
+                </div>
+                <div class="text-[11px] text-slate-600">
+                  <span data-i18n="lblDocDelivery">納品予定日:</span> <span id="doc-deliveryDate" class="text-slate-800 font-medium">2026年11月25日</span>
+                </div>
+
+                <div class="pt-2">
+                  <div class="font-bold text-brand-dark text-sm tracking-wide">MASG (Myanmar Architectural Solution Group)</div>
+                  <div class="text-[11px] text-slate-800 font-medium mt-0.5">
+                    <span data-i18n="lblDocPrepared">作成担当:</span> <span id="doc-preparedBy" class="font-semibold text-slate-900">Kaung Htet San (CG Director)</span>
+                  </div>
+                  <div class="text-[10px] text-slate-500 leading-tight mt-0.5">MASG-Chiangmai Studio, Thailand.</div>
+                  <div class="text-[10px] text-slate-500 font-mono">info@masgdesign.com.</div>
+                </div>
+              </div>
+
+              <!-- Hanko Inkan Seal Stamp -->
+              <div class="sm:absolute sm:right-0 sm:top-14 mt-1 sm:mt-0">
+                <div id="doc-hanko-stamp" class="hanko-stamp">
+                  <span>ＭＡ</span>
+                  <span>ＳＧ</span>
+                  <span class="text-[9px] -mt-0.5">之印</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Total Quotation Banner (御見積金額) -->
+          <div class="bg-slate-900 text-white rounded p-3 sm:p-4 mb-6 flex flex-wrap items-center justify-between gap-3 shadow-xs border-l-4 border-brand">
+            <div class="flex items-baseline gap-2">
+              <span id="doc-grandTotal-label" class="text-xs sm:text-sm font-medium tracking-wider text-slate-300 font-mincho" data-i18n="grandTotalLabel">
+                御見積金額（税込）
+              </span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-brand-light">
+              <span id="doc-grandTotal">¥0</span>
+              <span class="text-xs text-slate-300 font-normal ml-1">-</span>
+            </div>
+          </div>
+
+          <!-- Quotation Itemized Table -->
+          <div class="overflow-x-auto mb-6">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b-2 border-slate-800 text-slate-800 bg-slate-100/70">
+                  <th class="py-2 px-2.5 w-10 text-center font-semibold">No</th>
+                  <th class="py-2 px-3 font-semibold" data-i18n="thItem">品名・仕様内容 (Items & Technical Specifications)</th>
+                  <th class="py-2 px-2 w-14 text-center font-semibold" data-i18n="thQty">数量</th>
+                  <th class="py-2 px-3 w-24 text-right font-semibold" data-i18n="thUnit">単価</th>
+                  <th class="py-2 px-3 w-28 text-right font-semibold" data-i18n="thAmount">金額</th>
+                </tr>
+              </thead>
+              <tbody id="doc-table-body" class="divide-y divide-slate-200 text-slate-700">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Summary Calculations (Subtotal, Discount, Surcharges, Tax, Total) -->
+          <div class="flex justify-end mb-6 break-inside-avoid">
+            <div class="w-68 sm:w-76 space-y-1.5 text-xs">
+              <div class="flex justify-between py-1 border-b border-slate-200 text-slate-600">
+                <span data-i18n="subtotalLabel">小計 (Subtotal)</span>
+                <span id="doc-subtotal" class="font-mono font-medium text-slate-900">¥0</span>
+              </div>
+              <div id="doc-discount-row" class="flex justify-between py-1 border-b border-slate-200 text-emerald-700 hidden">
+                <span id="doc-discount-label">Still 複数カット一括割引 (-20%)</span>
+                <span id="doc-discount-amount" class="font-mono">-¥0</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-200 text-slate-600">
+                <span data-i18n="taxLabel">消費税 (10% JCT)</span>
+                <span id="doc-tax" class="font-mono font-medium text-slate-900">¥0</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b-2 border-slate-900 font-bold text-sm text-slate-900">
+                <span data-i18n="totalLabel">合計金額 (Grand Total)</span>
+                <span id="doc-total-bottom" class="font-mono text-slate-900">¥0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Page 1 Footer Reference to Page 2 Appendix -->
+          <div class="mt-8 pt-3 border-t border-dashed border-slate-200 text-slate-500 flex flex-wrap justify-between items-center text-[10px]">
+            <div class="flex items-center gap-1.5 text-slate-600 font-medium">
+              <span class="inline-block w-1.5 h-1.5 bg-brand rounded-full"></span>
+              <span data-i18n="page1AppendixNotice">※ 制作規約および承認規定（Terms & Production Guidelines）は次頁（別紙 Appendix）に記載しております。</span>
+            </div>
+            <div class="font-mono text-slate-400">
+              <span>Page 1 / 2</span> • masg-architecture.com
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PAGE 2: SUBSEQUENT PAGE APPENDIX FOR TERMS & PRODUCTION GUIDELINES -->
+        <div id="terms-appendix-paper" class="print-page-break bg-white rounded shadow-md border border-slate-200/80 p-8 sm:p-12 text-slate-900 relative">
+          
+          <!-- Appendix Sheet Header -->
+          <div class="flex items-center justify-between pb-4 mb-6 border-b-2 border-slate-900">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 shrink-0 flex items-center justify-center bg-transparent">
+                <svg viewBox="0 0 1000 1000" class="masg-default-svg w-full h-full bg-transparent" xmlns="http://www.w3.org/2000/svg">
+                  <use href="#masg-logo-vector"></use>
+                </svg>
+                <img class="masg-custom-img hidden w-full h-full object-contain bg-transparent" alt="MASG Logo" />
+              </div>
+              <div>
+                <span class="text-xs font-bold tracking-wider text-brand font-mono">APPENDIX • TERMS & PRODUCTION GUIDELINES</span>
+                <h2 class="text-base sm:text-lg font-bold text-slate-900" data-i18n="termsHeading">Terms & Production Guidelines (制作規約・承認規定)</h2>
+              </div>
+            </div>
+            <div class="text-right text-[11px] text-slate-600 font-mono">
+              <div><span data-i18n="lblDocRef">Ref No:</span> <span id="doc-appendix-refNo" class="font-semibold text-slate-900">MASG-2026-8812</span></div>
+              <div class="text-[10px] text-slate-400">Appendix Sheet (Page 2 / 2)</div>
+            </div>
+          </div>
+
+          <!-- Full Numbered Terms Body -->
+          <div class="space-y-5 text-xs leading-relaxed text-slate-700">
+            
+            <!-- 1. Production Milestones & Revision Policy -->
+            <div class="space-y-2">
+              <h3 class="font-bold text-slate-900 text-sm border-l-4 border-brand pl-2.5 py-0.5 bg-brand-soft/60" data-i18n="term1Title">
+                1. Production Milestones & Revision Policy
+              </h3>
+              <div class="pl-4 space-y-2">
+                <div>
+                  <p class="font-semibold text-slate-800" data-i18n="term1Line1">1.1. Production progresses through three mandatory approval milestones:</p>
+                  <div class="pl-5 mt-1 space-y-1 text-slate-600">
+                    <p data-i18n="term1Step1">1. Stage 1 (Massing & Composition): Camera Angle & Clay Massing Sign-off (Clay Renderings or model check)</p>
+                    <p data-i18n="term1Step2">2. Stage 2 (Look & Atmosphere): Material, Texture & Lighting Tone Review (First Render or First Stage)</p>
+                    <p data-i18n="term1Step3">3. Stage 3 (Final Polish): High-Res Final Delivery & Retouching (Final Render)</p>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="font-semibold text-slate-800" data-i18n="term1Line2">1.2. Each project phase includes up to two (2) rounds of standard revisions within the base fee, covering the following scope:</p>
+                  <div class="pl-5 mt-1 space-y-1 text-slate-600">
+                    <p data-i18n="term1Rounds1">1. Stage 1 (Massing & Composition): Corrections to 3D modeling accuracy, minor architectural adjustments, camera placement/field of view fine-tuning, and primary furniture/prop layout placement.</p>
+                    <p data-i18n="term1Rounds2">2. Stage 2 (Look & Atmosphere): Adjustments to material finishes, surface textures, lighting mood/time of day, entourage positioning (3D people/landscaping), and initial color grading.</p>
+                    <p data-i18n="term1Rounds3">3. Stage 3 (Final Polish): Minor 2D post-production enhancements, subtle color calibration, and final high-resolution artifact cleanup.</p>
+                  </div>
+                </div>
+
+                <p class="text-slate-800" data-i18n="term1Rollback">
+                  1.3. Rollbacks to previous approved milestones (e.g., changing camera angle after sign-off, or architectural design changes post-material approval) incur additional fees (from ¥30,000/round) and delivery schedule adjustments.
+                </p>
+                <p class="text-slate-800" data-i18n="term1Remodeling">
+                  1.4. Substantial 3D remodeling due to architectural design modifications beyond the initial drawings will be charged (30% of CG production item cost).
+                </p>
+              </div>
+            </div>
+
+            <!-- 2. Provided Data & Background Photo Compositing -->
+            <div class="space-y-2">
+              <h3 class="font-bold text-slate-900 text-sm border-l-4 border-brand pl-2.5 py-0.5 bg-brand-soft/60" data-i18n="term2Title">
+                2. Provided Data & Background Photo Compositing
+              </h3>
+              <div class="pl-4 space-y-1.5">
+                <p data-i18n="term2Line1">
+                  2.1. Any modeling discrepancies, design resolution, or dimensional fixing originating from client-provided 3D (3dsmax, Revit, Rhino, SketchUp) or 2D CAD files will be evaluated and estimated based on required hours.
+                </p>
+                <p data-i18n="term2Line2">
+                  2.2. When compositing with site photographs or drone photography, high-resolution source photography with identified focal parameters and capture time must be provided. if not will be charged (+20,000 JPY)
+                </p>
+              </div>
+            </div>
+
+            <!-- 3. Product-Specific Terms & Conditions -->
+            <div class="space-y-2">
+              <h3 class="font-bold text-slate-900 text-sm border-l-4 border-brand pl-2.5 py-0.5 bg-brand-soft/60" data-i18n="term3Title">
+                3. Product-Specific Terms & Conditions
+              </h3>
+              <div class="pl-4 space-y-1.5 text-slate-700">
+                <p data-i18n="term3Line1">
+                  3.1. <strong>Still Images & Photomatch:</strong> Final deliverables are rendered at the contracted resolution (Standard 2K / High 4K). Any modification to camera angle, aspect ratio, or lens focal length requested after Stage 1 sign-off will be treated as an additional view and billed accordingly.
+                </p>
+                <p data-i18n="term3Line2">
+                  3.2. <strong>360 VR & Before/After VR:</strong> Panoramic viewpoints and camera nodes are permanently fixed upon Stage 1 approval. Subsequent additions of node locations, camera path alterations, or interactive hotspot features outside the initial agreement require a supplementary quote.
+                </p>
+                <p data-i18n="term3Line3">
+                  3.3. <strong>Animation (Walkthrough & Cinematic):</strong> Camera animatics, motion speed, and timing storyboards must be formally approved prior to sequence rendering. Any changes to camera trajectory, pacing, or clip duration requested after render kickoff will incur re-rendering fees based on affected frame counts.
+                </p>
+                <p data-i18n="term3Line4">
+                  3.4. <strong>Shapespark Virtual Walkthrough:</strong> Web and mobile real-time performance requires strict polygon count and texture budget constraints. High-density custom 3D assets provided by the client will undergo automatic geometry optimization unless dedicated custom optimization services are added.
+                </p>
+              </div>
+            </div>
+
+            <!-- 4. Delivery Schedules -->
+            <div class="space-y-1">
+              <h3 class="font-bold text-slate-900 text-sm border-l-4 border-brand pl-2.5 py-0.5 bg-brand-soft/60" data-i18n="term4Title">
+                4. Delivery Schedule Policy
+              </h3>
+              <p class="pl-4 text-slate-700" data-i18n="term4DeliveryNote">
+                4.1. Delivery schedules are indicative and subject to adjustment based on the final agreed scope of work and project complexity within the official quotation.
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Appendix Footer -->
+          <div class="mt-8 pt-3 border-t border-dashed border-slate-200 text-slate-500 flex flex-wrap justify-between items-center text-[10px]">
+            <div>
+              <span data-i18n="footerStudioDivision">MASG ArchViz Division • Myanmar Architectural Solution Group</span>
+            </div>
+            <div class="font-mono text-slate-400">
+              <span>Page 2 / 2 (Appendix)</span> • masg-architecture.com
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    // Prevent uncaught promise rejections from external font/canvas loaders
+    window.addEventListener('unhandledrejection', function(event) {
+      event.preventDefault();
+    });
+
+    let currentLang = 'ja';
+    let currentCurrency = 'JPY';
+    const JPY_TO_USD_RATE = 150.0;
+
+    // Current Product Type (from Section 2 - 6 options)
+    let currentProductType = 'still';
+
+    // Pricing Matrix per Section 2
+    const PRICING_RULES = {
+      baseModeling: {
+        lvl1: { still: 0, vr360: 0, beforeAfterVr: 0, photomatch: 0, animation: 0, shapespark: 0 },
+        lvl2: { still: 15000, vr360: 15000, beforeAfterVr: 20000, photomatch: 15000, animation: 25000, shapespark: 25000 },
+        lvl3: { still: 25000, vr360: 25000, beforeAfterVr: 25000, photomatch: 25000, animation: 25000, shapespark: 25000 },
+        lvl4: { still: 30000, vr360: 30000, beforeAfterVr: 35000, photomatch: 30000, animation: 45000, shapespark: 45000 }
+      },
+      archDetails: {
+        still: 15000,
+        vr360: 15000,
+        beforeAfterVr: 20000,
+        photomatch: 15000,
+        animation: 25000,
+        shapespark: 25000
+      },
+      schedule: {
+        normal: { still: 0, vr360: 0, beforeAfterVr: 0, photomatch: 0, animation: 0, shapespark: 0 },
+        rush: { still: 20000, vr360: 20000, beforeAfterVr: 25000, photomatch: 20000, animation: 35000, shapespark: 35000 },
+        superRush: { still: 35000, vr360: 35000, beforeAfterVr: 45000, photomatch: 35000, animation: 60000, shapespark: 60000 }
+      },
+      deliveryGuideline: {
+        still: 'approx. 10 business days',
+        vr360: 'approx. 14 business days',
+        beforeAfterVr: 'approx. 14 business days',
+        photomatch: 'approx. 14 business days',
+        animation: 'approx. 20 business days',
+        shapespark: 'approx. 24 business days'
+      }
+    };
+
+    // Shared options catalog
+    const TIME_OPTIONS = {
+      day: { ja: 'Daytime Clear Sky (日中・快晴)', en: 'Daytime Clear Sky', price: 0 },
+      twilight: { ja: 'Twilight/Blue Sky (薄暮・ブルーアワー)', en: 'Twilight/Blue Sky', price: 5000 },
+      golden: { ja: 'Golden Hour/ Orange Sky (夕景・サンセット)', en: 'Golden Hour/ Orange Sky', price: 5000 },
+      night: { ja: 'Night Time/Dark Blue Sky (夜景・都市光)', en: 'Night Time/Dark Blue Sky', price: 10000 }
+    };
+
+    const PEOPLE_OPTIONS_DEFAULT = {
+      none: { ja: 'None (Clean Architecture)', en: 'None (Clean Architecture)', price: 0 },
+      visualizer: { ja: 'Up to Visualizer (no changes from client)', en: 'Up to Visualizer (no changes from client)', price: 0 },
+      silhouettes: { ja: 'Silhouettes', en: 'Silhouettes', price: 3000 },
+      library: { ja: 'Library 3D People (client choose from library)', en: 'Library 3D People (client choose from library)', price: 5000 },
+      custom: { ja: 'Custom People (people instruction)', en: 'Custom People (people instruction)', price: 15000 }
+    };
+
+    const STYLE_OPTIONS_BY_PRODUCT = {
+      default: {
+        japanese_editorial: { ja: 'Japanese Editorial (Soft, Natural, Elegant)', en: 'Japanese Editorial (Soft, Natural, Elegant)', price: 0 },
+        competition: { ja: 'Competition Conceptual (Dramatic Mood)', en: 'Competition Conceptual (Dramatic Mood)', price: 5000 },
+        luxury: { ja: 'High-End Luxury (High Contrast)', en: 'High-End Luxury (High Contrast)', price: 10000 },
+        commercial_leasing: { ja: 'Commercial Leasing (Bright and Crisp)', en: 'Commercial Leasing (Bright and Crisp)', price: 10000 }
+      },
+      photomatch: {
+        japanese_editorial: { ja: 'Japanese Editorial Residential (Soft, Natural, Elegant)', en: 'Japanese Editorial Residential (Soft, Natural, Elegant)', price: 0 },
+        competition: { ja: 'Competition Conceptual (Dramatic Mood)', en: 'Competition Conceptual (Dramatic Mood)', price: 5000 },
+        luxury: { ja: 'High-End Luxury (High Contrast)', en: 'High-End Luxury (High Contrast)', price: 10000 },
+        commercial_leasing: { ja: 'Commercial Leasing (Bright and Crisp)', en: 'Commercial Leasing (Bright and Crisp)', price: 5000 }
+      }
+    };
+
+    function getStyleOptions(productType) {
+      return productType === 'photomatch' ? STYLE_OPTIONS_BY_PRODUCT.photomatch : STYLE_OPTIONS_BY_PRODUCT.default;
+    }
+
+    const ANIMATION_PRICING = {
+      length: {
+        under_60: { ja: 'Under 60 sec (60秒未満)', en: 'Under 60 sec', price: 3000 },
+        '60_90': { ja: '60 sec to 90 sec (60〜90秒)', en: '60 sec to 90 sec', price: 6000 },
+        '90_120': { ja: '90 sec to 120 sec (90〜120秒)', en: '90 sec to 120 sec', price: 8000 },
+        '120_180': { ja: '120 sec to 180 sec (120〜180秒)', en: '120 sec to 180 sec', price: 10000 }
+      },
+      pathStyle: {
+        walkthrough: { ja: 'Walkthrough (ウォークスルー)', en: 'Walkthrough', price: 5000 },
+        cinematic: { ja: 'Cinematic (シネマティック)', en: 'Cinematic', price: 5000 },
+        hybrid: { ja: 'Hybrid (Cinematic + Walkthrough)', en: 'Hybrid (Cinematic + Walkthrough)', price: 8000 }
+      },
+      workflow: {
+        max_sketch_d5: { ja: '3dsmax or Sketchup + D5', en: '3dsmax or Sketchup + D5', price: 5000 },
+        max_unreal: { ja: '3dsmax + Unreal', en: '3dsmax + Unreal', price: 25000 }
+      },
+      people: {
+        none: { ja: 'None (Clean Architecture)', en: 'None (Clean Architecture)', price: 0 },
+        visualizer: { ja: 'Up to Visualizer (no changes from client)', en: 'Up to Visualizer (no changes from client)', price: 3000 },
+        silhouettes: { ja: 'Silhouettes', en: 'Silhouettes', price: 6000 },
+        library: { ja: 'Library 3D People (client choose from library)', en: 'Library 3D People (client choose from library)', price: 10000 },
+        custom: { ja: 'Custom Still People (people instruction)', en: 'Custom Still People (people instruction)', price: 50000 }
+      },
+      resolution: {
+        anim_2k: { ja: 'Standard (under 2K)', en: 'Standard (under 2K)', price: 0 },
+        anim_4k: { ja: 'High (up to 4K)', en: 'High (up to 4K)', price: 25000 }
+      }
+    };
+
+    const BACKGROUND_OPTIONS = {
+      clear: { ja: 'Clear Sky or Plain White with Road', en: 'Clear Sky or Plain White with Road', price: 0 },
+      white_box: { ja: 'White Box with Road', en: 'White Box with Road', price: 3000 },
+      realistic: { ja: 'Realistic Building with Road', en: 'Realistic Building with Road', price: 5000 }
+    };
+
+    // Typologies per product type
+    const PRODUCT_TYPOLOGIES = {
+      still: {
+        ext_com_street: { ja: 'Exterior Commercial Street Level', en: 'Exterior Commercial Street Level', price: 15000 },
+        ext_res_street: { ja: 'Exterior Residential Street Level', en: 'Exterior Residential Street Level', price: 15000 },
+        ext_com_aerial: { ja: 'Exterior Commercial Aerial', en: 'Exterior Commercial Aerial', price: 20000 },
+        int_atrium: { ja: 'Interior Atrium/Lobby', en: 'Interior Atrium/Lobby', price: 20000 },
+        int_commercial: { ja: 'Interior Commercial', en: 'Interior Commercial', price: 15000 },
+        int_residential: { ja: 'Interior Residential', en: 'Interior Residential', price: 5000 }
+      },
+      vr360: {
+        ext_street: { ja: 'Exterior Street Level', en: 'Exterior Street Level', price: 15000 },
+        ext_aerial: { ja: 'Exterior Aerial', en: 'Exterior Aerial', price: 20000 },
+        int_atrium: { ja: 'Interior Atrium/Lobby', en: 'Interior Atrium/Lobby', price: 20000 },
+        int_commercial: { ja: 'Interior Commercial', en: 'Interior Commercial', price: 15000 }
+      },
+      beforeAfterVr: {
+        ext_commercial: { ja: 'Exterior Commercial', en: 'Exterior Commercial', price: 20000 },
+        ext_residential: { ja: 'Exterior Residential', en: 'Exterior Residential', price: 20000 },
+        int_residential: { ja: 'Interior Residential', en: 'Interior Residential', price: 25000 },
+        int_commercial: { ja: 'Interior Commercial', en: 'Interior Commercial', price: 25000 },
+        ext_aerial: { ja: 'Exterior Aerial', en: 'Exterior Aerial', price: 30000 }
+      },
+      photomatch: {
+        ext_street: { ja: 'Exterior Street Level', en: 'Exterior Street Level', price: 15000 },
+        ext_aerial: { ja: 'Exterior Aerial', en: 'Exterior Aerial', price: 20000 },
+        int_atrium: { ja: 'Interior Atrium/Lobby', en: 'Interior Atrium/Lobby', price: 20000 },
+        int_commercial: { ja: 'Interior Commercial', en: 'Interior Commercial', price: 15000 }
+      },
+      animation: {
+        walkthrough_cinematic: { ja: 'Animation Sequence', en: 'Animation Sequence', price: 0 }
+      },
+      shapespark: {
+        commercial: { ja: 'Commercial (商業施設)', en: 'Commercial', price: 15000 },
+        residential: { ja: 'Residential (住宅・共用部)', en: 'Residential', price: 20000 }
+      }
+    };
+
+    // State of views/items per product type
+    const productViewsState = {
+      still: [
+        {
+          id: 'view-1',
+          viewName: 'Main Entrance Approach (正面エントランス外観)',
+          typology: 'ext_com_street',
+          timeOfDay: 'twilight',
+          people: 'library',
+          background: 'realistic',
+          style: 'luxury',
+          resolution: 'res_4k',
+          orientation: 'landscape',
+          specialRatioText: ''
+        },
+        {
+          id: 'view-2',
+          viewName: '2F Atrium Lobby (2階吹き抜けアトリウム)',
+          typology: 'int_atrium',
+          timeOfDay: 'day',
+          people: 'silhouettes',
+          background: 'clear',
+          style: 'japanese_editorial',
+          resolution: 'res_standard',
+          orientation: 'landscape',
+          specialRatioText: ''
+        }
+      ],
+      vr360: [
+        {
+          id: 'vr-1',
+          viewName: '360° Retail Lounge Panorama',
+          typology: 'int_commercial',
+          timeOfDay: 'twilight',
+          people: 'library',
+          style: 'luxury',
+          resolution: 'vr_8k'
+        }
+      ],
+      beforeAfterVr: [
+        {
+          id: 'bavr-1',
+          viewName: 'Before/After Street Facade Renewal',
+          typology: 'ext_commercial',
+          timeOfDay: 'day',
+          people: 'silhouettes',
+          style: 'japanese_editorial',
+          resolution: 'vr_4k'
+        }
+      ],
+      photomatch: [
+        {
+          id: 'pm-1',
+          viewName: 'South-West Corner Intersection View',
+          typology: 'ext_street',
+          timeOfDay: 'day',
+          people: 'visualizer',
+          style: 'commercial_leasing',
+          resolution: 'vr_4k'
+        }
+      ],
+      animation: [
+        {
+          id: 'anim-1',
+          viewName: 'Main Promotional Walkthrough Movie',
+          length: '60_90',
+          pathStyle: 'hybrid',
+          workflow: 'max_sketch_d5',
+          people: 'library',
+          style: 'competition',
+          resolution: 'anim_4k'
+        }
+      ],
+      shapespark: [
+        {
+          id: 'ss-1',
+          viewName: 'Interactive Commercial Podium Tour',
+          typology: 'commercial',
+          timeOfDay: 'day',
+          people: 'none',
+          device: 'optimized'
+        }
+      ]
+    };
+
+    // Localization dictionary
+    const I18N = {
+      ja: {
+        printBtn: '印刷 / Print',
+        exportPdf: 'PDFダウンロード',
+        exportingPdf: 'PDF生成中...',
+        printPdf: 'PDF印刷 / 出力',
+        sec1Title: 'Section 1: 案件・顧客情報 (Project & Client Information)',
+        lblProjectTitle: 'Project Title/Name (件名)',
+        lblCompany: 'Company/Developer (発注元・御中)',
+        lblObjective: 'Project Objective (業務目的)',
+        lblBuildingType: 'Building Type (建物用途)',
+        lblFloorArea: 'Building Floor Area (延床面積)',
+        lblTotalFloors: 'Total No. of Floor (階数)',
+        lblPreparedBy: 'Prepared by (作成担当・CG Director)',
+        lblIssueDate: 'Price Estimate Issue Date (発行日)',
+        lblDeliveryDate: 'Tentative Delivery Date (納品希望日)',
+        lblRefNo: 'Ref No. (見積番号 - 自動生成)',
+        btnRegenRef: '再生成',
+        sec2Title: 'Section 2: 業務種別 (Product Type)',
+        sec3Title: 'Section 3: データ分析およびベース3Dモデリング',
+        sec3Hint: '* 本セクションの単価はSection 2の選択種別に応じて自動連動します。',
+        dataAnalysisTitle: 'データ分析費 (Data Analysis - Fixed Price)',
+        dataAnalysisDesc: 'クライアント要件ヒアリング・支給図面資産精査および仕様確定 (10,000 JPY)',
+        baseModelingLabel: 'ベース3Dモデリング (壁・床・窓・主要構造フレーム)',
+        archDetailsTitle: '建築意匠・ディテール追加 (CAD, DWG, PDF)',
+        archDetailsDesc: 'カーテンウォール、マリオン、ルーバー、照明器具等の詳細モデリング付加',
+        consolidationNote: '※ データ分析費、ベース3Dモデリング、建築意匠追加は見積書PDF上で1行の合算項目として統合出力されます。',
+        furnitureOptionsHeading: '家具オプション (Furniture Options)',
+        lblLibraryFurn: 'ライブラリ家具選択 (Library Furniture Selection)',
+        lblCustomFurn: '造作・カスタム家具モデリング (Custom Loose Furniture Modelling)',
+        scheduleLabel: '制作スケジュール区分 (Schedule)',
+        scheduleFootnote: '* 納期は案件の規模・詳細度により変動する場合があります（目安スケジュールは見取書PDFに記載されます）。',
+        taxToggle: '消費税 10% を計上する (Include 10% JCT)',
+        sec4Title: 'Section 4: CG制作オプション (CG Production Options)',
+        btnAddView: 'カット・ビュー追加 (Add Another View)',
+        sec5Title: 'Section 5: データ欠落・不備追加費用 (Missing and incomplete Data surcharge)',
+        droneCompTitle: 'データ欠落・不備追加費用 (Missing and incomplete Data surcharge)',
+        droneCompDesc: '実写・ドローン写真合成には焦点距離パラメータおよび撮影日時が記録された高解像度写真が必要です。これらが提供されない場合、追加費用（+20,000 JPY）が発生いたします。',
+        guidelineSummaryTitle: '別紙規約 (Appendix) について:',
+        appendixNoteText: '制作規約および承認規定（Terms & Production Guidelines）の全文は、見積書PDFの次ページ（2ページ目・別紙 Appendix）に自動配置されます。',
+        page1AppendixNotice: '※ 制作規約および承認規定（Terms & Production Guidelines）は次頁（別紙 Appendix）に記載しております。',
+        termsAppendixIntro: '本見積書に付随する制作規約および承認ガイドラインは以下の通り別紙（Appendix）として規定いたします。',
+        docTitle: '御 見 積 書',
+        docSubTitle: 'MASG Arch Viz Fee Proposal',
+        greetingText: '平素は格別のお引き立てを賜り、厚く御礼申し上げます。<br>ご依頼いただきました下記業務につきまして、下記の通り御見積申し上げます。ご査収の程よろしくお願い申し上げます。',
+        lblDocProject: '件名 / Project:',
+        lblDocObjective: '業務目的 / Goal:',
+        lblDocBldgType: '建物用途:',
+        lblDocAreaFloors: '規模:',
+        lblDocRef: 'Ref No:',
+        lblDocIssueDate: '発行日:',
+        lblDocDelivery: '納品予定日:',
+        lblDocPrepared: '作成担当:',
+        grandTotalLabel: '御見積金額（税込）',
+        thItem: '品名・仕様内容 (Items & Technical Specifications)',
+        thQty: '数量',
+        thUnit: '単価',
+        thAmount: '金額',
+        subtotalLabel: '小計 (Subtotal)',
+        taxLabel: '消費税 (10% JCT)',
+        totalLabel: '合計金額 (Grand Total)',
+        termsHeading: 'Terms & Production Guidelines (制作規約・承認規定)',
+        term1Title: '1. Production Milestones & Revision Policy (制作工程・校正規定)',
+        term1Line1: '1.1. 本制作は以下の3段階の承認ステップにて進行いたします：',
+        term1Step1: '1. Stage 1 (Massing & Composition): 形状・カメラアングル確認（クレイレンダリング / モデルチェック）',
+        term1Step2: '2. Stage 2 (Look & Atmosphere): マテリアル・テクスチャ・ライティング確認（ファーストレンダリング）',
+        term1Step3: '3. Stage 3 (Final Polish): 本レンダリング・ポストプロダクション（最終レンダリング・レタッチ納品）',
+        term1Line2: '1.2. 各段階において原則「2回まで」の修正指示を基本料金内に含みます：',
+        term1Rounds1: '1. Stage 1 (Massing & Composition): 3Dモデリング精度修正、軽微な設計変更、画角微調整、家具・小物基本配置',
+        term1Rounds2: '2. Stage 2 (Look & Atmosphere): マテリアル質感、表面テクスチャ、照明ムード/時間帯、人物点景・植栽、一次グレーディング',
+        term1Rounds3: '3. Stage 3 (Final Polish): 2Dポストプロダクション微調整、微細な色調補正、高解像度レンダリングノイズ除去',
+        term1Rollback: '1.3. 各段階の承認完了後に生じた前工程への手戻り（アングル決定後の大幅な画角変更、マテリアル承認後のモデル設計変更等）につきましては、追加工数に応じた追加費用（¥30,000〜/回）および納期調整が発生いたします。',
+        term1Remodeling: '1.4. 設計変更に伴う大幅な3Dモデル再構築や、当初の支給図面に含まれていなかった追加要素につきましては、CG制作基本項目の30%に相当する追加費用が発生いたします。',
+        term2Title: '2. Provided Data & Background Photo Compositing (支給データおよび背景写真合成)',
+        term2Line1: '2.1. クライアント様よりご支給いただく3Dデータ（3dsmax、Revit、Rhino、SketchUp等）または2D図面（CAD/DWG/PDF）に起因する寸法不整合や欠落部分の補正・詳細モデリングについては、協議の上工数を決定いたします。',
+        term2Line2: '2.2. 敷地写真・ドローン空撮データ合成を行う場合、焦点距離パラメータおよび撮影時間帯が明記された高解像度写真のご支給が必要です。未記載・不備がある場合は追加費用（+20,000 JPY）が発生いたします。',
+        term3Title: '3. Product-Specific Terms & Conditions (製品個別条件)',
+        term3Line1: '3.1. <strong>Still Images & Photomatch:</strong> 最終成果物は契約解像度（Standard 2K / High 4K）にて納品いたします。Stage 1承認後のカメラアングル・アスペクト比・レンズ焦点距離の変更は追加カット扱いとして別途費用を申し受けます。',
+        term3Line2: '3.2. <strong>360 VR & Before/After VR:</strong> パノラマ視点およびカメラノード位置はStage 1承認をもって確定となります。初期合意の範囲外となるノード位置の追加、カメラパス変更、インタラクティブホットスポット機能の追加には別途追加見積が必要です。',
+        term3Line3: '3.3. <strong>Animation (Walkthrough & Cinematic):</strong> カメラアニマティクス・移動速度・タイミング絵コンテは本レンダリング開始前に正式承認が必要です。レンダリング開始後のカメラ軌道・ペース・尺変更は該当フレーム数に応じた再計算費用が発生いたします。',
+        term3Line4: '3.4. <strong>Shapespark Virtual Walkthrough:</strong> Web・モバイルでのリアルタイム動作には厳格なポリゴン数・テクスチャ容量の制限が必要です。支給された高密度3Dアセットは、特注最適化オプションを追加しない限り自動ジオメトリ最適化処理が適用されます。',
+        term4Title: '4. Delivery Schedule Policy (納期規定)',
+        term4DeliveryNote: '4.1. 記載の制作スケジュール（納期）は目安であり、正式見積における最終合意の業務範囲およびプロジェクトの複雑度に応じて調整される場合があります。',
+        footerStudioDivision: 'MASG ArchViz Division • Myanmar Architectural Solution Group',
+        footerDocType: 'Official Fee Proposal Sheet'
+      },
+      en: {
+        printBtn: 'Print',
+        exportPdf: 'Download PDF',
+        exportingPdf: 'Generating PDF...',
+        printPdf: 'Print / Save PDF',
+        sec1Title: 'Section 1: Project & Client Information',
+        lblProjectTitle: 'Project Title/Name',
+        lblCompany: 'Company/Developer',
+        lblObjective: 'Project Objective',
+        lblBuildingType: 'Building Type',
+        lblFloorArea: 'Building Floor Area',
+        lblTotalFloors: 'Total No. of Floor',
+        lblPreparedBy: 'Prepared by',
+        lblIssueDate: 'Price Estimate Issue Date',
+        lblDeliveryDate: 'Tentative Delivery Date',
+        lblRefNo: 'Ref No. (Auto Generated)',
+        btnRegenRef: 'Regenerate',
+        sec2Title: 'Section 2: Product Type',
+        sec3Title: 'Section 3: Data Analysis and Base 3D Modelling',
+        sec3Hint: '* Pricing in this section automatically synchronizes with Section 2 selection.',
+        dataAnalysisTitle: 'Data Analysis (Fixed Price)',
+        dataAnalysisDesc: 'Data collecting and analyzing to understand client requirements and assets (10,000 JPY)',
+        baseModelingLabel: 'Base 3D modelling (Include the base structural frame of the building, including the wall, floor and windows)',
+        archDetailsTitle: 'Adding Architectural Details (CAD, DWG, PDF)',
+        archDetailsDesc: 'Curtain wall, louvers, lighting fixtures & fine structural ornamentation',
+        consolidationNote: 'Note: Data Analysis, Base 3D Modeling, and adding Architectural Details (if checked) will be consolidated into a single itemized total on the final PDF quotation.',
+        furnitureOptionsHeading: 'Furniture Options (Dropdown / Selection)',
+        lblLibraryFurn: 'Library Furniture Selection',
+        lblCustomFurn: 'Custom Loose Furniture Modelling',
+        scheduleLabel: 'Schedule (Dropdown menu)',
+        scheduleFootnote: '* Note: The tentative working schedule will be included in the final PDF quotation. Delivery date may change accordingly to project scope.',
+        taxToggle: 'Include 10% Japanese Consumption Tax (JCT)',
+        sec4Title: 'Section 4: CG Production Options',
+        btnAddView: 'Add Another View / Cut',
+        sec5Title: 'Section 5: Missing and incomplete Data surcharge',
+        droneCompTitle: 'Missing and incomplete Data surcharge',
+        droneCompDesc: 'Compositing requires high-resolution site/drone photography with documented focal parameters and capture time; failure to provide these will incur an additional fee (+20,000 JPY).',
+        guidelineSummaryTitle: 'Appendix Note:',
+        appendixNoteText: 'The full Terms & Production Guidelines appear on the subsequent page (Page 2 Appendix) of the PDF quotation.',
+        page1AppendixNotice: '* Full Terms & Production Guidelines are attached on the subsequent page as an Appendix.',
+        termsAppendixIntro: 'The following terms and guidelines shall appear in full on the subsequent page of the PDF quotation as an appendix.',
+        docTitle: 'FEE PROPOSAL / ESTIMATE',
+        docSubTitle: 'Commercial Architectural Visualization Proposal',
+        greetingText: 'We are pleased to submit our formal commercial visualization fee proposal for the above referenced project as itemized below. Please do not hesitate to contact us should you have any questions.',
+        lblDocProject: 'Project:',
+        lblDocObjective: 'Objective:',
+        lblDocBldgType: 'Typology:',
+        lblDocAreaFloors: 'Scale:',
+        lblDocRef: 'Ref No:',
+        lblDocIssueDate: 'Issue Date:',
+        lblDocDelivery: 'Delivery:',
+        lblDocPrepared: 'Prepared By:',
+        grandTotalLabel: 'Total Estimate Amount (Tax Included)',
+        thItem: 'Items & Technical Specifications',
+        thQty: 'Qty',
+        thUnit: 'Unit Price',
+        thAmount: 'Amount',
+        subtotalLabel: 'Subtotal',
+        taxLabel: 'Consumption Tax (10% JCT)',
+        totalLabel: 'Grand Total',
+        termsHeading: 'Terms & Production Guidelines',
+        term1Title: '1. Production Milestones & Revision Policy',
+        term1Line1: '1.1. Production progresses through three mandatory approval milestones:',
+        term1Step1: '1. Stage 1 (Massing & Composition): Camera Angle & Clay Massing Sign-off (Clay Renderings or model check)',
+        term1Step2: '2. Stage 2 (Look & Atmosphere): Material, Texture & Lighting Tone Review (First Render or First Stage)',
+        term1Step3: '3. Stage 3 (Final Polish): High-Res Final Delivery & Retouching (Final Render)',
+        term1Line2: '1.2. Each project phase includes up to two (2) rounds of standard revisions within the base fee, covering the following scope:',
+        term1Rounds1: '1. Stage 1 (Massing & Composition): Corrections to 3D modeling accuracy, minor architectural adjustments, camera placement/field of view fine-tuning, and primary furniture/prop layout placement.',
+        term1Rounds2: '2. Stage 2 (Look & Atmosphere): Adjustments to material finishes, surface textures, lighting mood/time of day, entourage positioning (3D people/landscaping), and initial color grading.',
+        term1Rounds3: '3. Stage 3 (Final Polish): Minor 2D post-production enhancements, subtle color calibration, and final high-resolution artifact cleanup.',
+        term1Rollback: '1.3. Rollbacks to previous approved milestones (e.g., changing camera angle after sign-off, or architectural design changes post-material approval) incur additional fees (from ¥30,000/round) and delivery schedule adjustments.',
+        term1Remodeling: '1.4. Substantial 3D remodeling due to architectural design modifications beyond the initial drawings will be charged (30% of CG production item cost).',
+        term2Title: '2. Provided Data & Background Photo Compositing',
+        term2Line1: '2.1. Any modeling discrepancies, design resolution, or dimensional fixing originating from client-provided 3D (3dsmax, Revit, Rhino, SketchUp) or 2D CAD files will be evaluated and estimated based on required hours.',
+        term2Line2: '2.2. When compositing with site photographs or drone photography, high-resolution source photography with identified focal parameters and capture time must be provided. if not will be charged (+20,000 JPY)',
+        term3Title: '3. Product-Specific Terms & Conditions',
+        term3Line1: '3.1. <strong>Still Images & Photomatch:</strong> Final deliverables are rendered at the contracted resolution (Standard 2K / High 4K). Any modification to camera angle, aspect ratio, or lens focal length requested after Stage 1 sign-off will be treated as an additional view and billed accordingly.',
+        term3Line2: '3.2. <strong>360 VR & Before/After VR:</strong> Panoramic viewpoints and camera nodes are permanently fixed upon Stage 1 approval. Subsequent additions of node locations, camera path alterations, or interactive hotspot features outside the initial agreement require a supplementary quote.',
+        term3Line3: '3.3. <strong>Animation (Walkthrough & Cinematic):</strong> Camera animatics, motion speed, and timing storyboards must be formally approved prior to sequence rendering. Any changes to camera trajectory, pacing, or clip duration requested after render kickoff will incur re-rendering fees based on affected frame counts.',
+        term3Line4: '3.4. <strong>Shapespark Virtual Walkthrough:</strong> Web and mobile real-time performance requires strict polygon count and texture budget constraints. High-density custom 3D assets provided by the client will undergo automatic geometry optimization unless dedicated custom optimization services are added.',
+        term4Title: '4. Delivery Schedule Policy',
+        term4DeliveryNote: '4.1. Delivery schedules are indicative and subject to adjustment based on the final agreed scope of work and project complexity within the official quotation.',
+        footerStudioDivision: 'MASG ArchViz Division • Myanmar Architectural Solution Group',
+        footerDocType: 'Official Fee Proposal Sheet'
+      }
+    };
+
+    /* ----------------------------------------------------
+       Initialization
+    ---------------------------------------------------- */
+    window.onload = function() {
+      const today = new Date();
+      document.getElementById('cfg-issueDate').value = today.toISOString().split('T')[0];
+      const delivery = new Date();
+      delivery.setDate(today.getDate() + 14);
+      document.getElementById('cfg-deliveryDate').value = delivery.toISOString().split('T')[0];
+
+      regenerateRefNo(false);
+      populateSection3Dropdowns();
+      renderSection4Controls();
+      updateHankoStamp();
+      updateDocument();
+      lucide.createIcons();
+    };
+
+    function regenerateRefNo(notify = true) {
+      const random4 = Math.floor(1000 + Math.random() * 9000);
+      const year = new Date().getFullYear();
+      document.getElementById('cfg-refNo').value = `MASG-${year}-${random4}`;
+      if (notify) updateDocument();
+    }
+
+    function formatCurrency(amountJPY) {
+      if (currentCurrency === 'USD') {
+        const usdVal = Math.round(amountJPY / JPY_TO_USD_RATE);
+        return `$${usdVal.toLocaleString('en-US')}`;
+      }
+      return `¥${Math.round(amountJPY).toLocaleString('ja-JP')}`;
+    }
+
+    function changeProductType(newType) {
+      currentProductType = newType;
+      
+      document.querySelectorAll('.product-type-card').forEach(card => {
+        const input = card.querySelector('input');
+        if (input && input.value === newType) {
+          card.classList.add('border-brand', 'bg-brand-soft/80', 'ring-1', 'ring-brand');
+        } else {
+          card.classList.remove('border-brand', 'bg-brand-soft/80', 'ring-1', 'ring-brand');
+        }
+      });
+
+      populateSection3Dropdowns();
+      renderSection4Controls();
+      updateDocument();
+    }
+
+    /* ----------------------------------------------------
+       Section 3: Synchronized Options & Pricing Matrix
+    ---------------------------------------------------- */
+    function populateSection3Dropdowns() {
+      const isJa = currentLang === 'ja';
+      const type = currentProductType;
+
+      // Base 3D Modeling Dropdown
+      const modelSelect = document.getElementById('cfg-baseModelLevel');
+      const curModelVal = modelSelect.value || 'lvl1';
+
+      const pLvl1 = PRICING_RULES.baseModeling.lvl1[type];
+      const pLvl2 = PRICING_RULES.baseModeling.lvl2[type];
+      const pLvl3 = PRICING_RULES.baseModeling.lvl3[type];
+      const pLvl4 = PRICING_RULES.baseModeling.lvl4[type];
+
+      modelSelect.innerHTML = `
+        <option value="lvl1" ${curModelVal === 'lvl1' ? 'selected' : ''}>
+          ${isJa ? 'Level - 1: 完成精緻3Dデータ支給 (3dsmax, Skp等)' : 'Level - 1, Final detail 3d data model Provided (e.g. 3dsmax, Skp)'} (+${formatCurrency(pLvl1)})
+        </option>
+        <option value="lvl2" ${curModelVal === 'lvl2' ? 'selected' : ''}>
+          ${isJa ? 'Level - 2: 概略3Dデータ支給 (Revit, Archicad, 3Ds, Obj)' : 'Level - 2, Schematic 3d data provided (eg. Revit, Archicad, 3Ds, Obj)'} (+${formatCurrency(pLvl2)})
+        </option>
+        <option value="lvl3" ${curModelVal === 'lvl3' ? 'selected' : ''}>
+          ${isJa ? 'Level - 3: 2D図面からのモデリング (CAD, DWG, PDF)' : 'Level - 3, Modelling from 2D drawing (CAD,DWG, PDF)'} (+${formatCurrency(pLvl3)})
+        </option>
+        <option value="lvl4" ${curModelVal === 'lvl4' ? 'selected' : ''}>
+          ${isJa ? 'Level - 4: 手描きスケッチからのモデリング (Hand sketch)' : 'Level - 4, Modelling from sketch (handsketch drawing)'} (+${formatCurrency(pLvl4)})
+        </option>
+      `;
+
+      // Architectural Details Badge
+      const archFee = PRICING_RULES.archDetails[type];
+      document.getElementById('badge-archDetailsFee').innerText = `+${formatCurrency(archFee)}`;
+      const droneBadge = document.getElementById('badge-droneCompFee');
+      if (droneBadge) droneBadge.innerText = `+${formatCurrency(20000)}`;
+
+      // Schedule dropdown
+      const schedSelect = document.getElementById('cfg-schedule');
+      const curSchedVal = schedSelect.value || 'normal';
+
+      const pNorm = PRICING_RULES.schedule.normal[type];
+      const pRush = PRICING_RULES.schedule.rush[type];
+      const pSuper = PRICING_RULES.schedule.superRush[type];
+
+      schedSelect.innerHTML = `
+        <option value="normal" ${curSchedVal === 'normal' ? 'selected' : ''}>
+          ${isJa ? 'Normal Schedule (通常工程)' : 'Normal Schedule (Quoted Schedule)'} (+${formatCurrency(pNorm)})
+        </option>
+        <option value="rush" ${curSchedVal === 'rush' ? 'selected' : ''}>
+          ${isJa ? 'Rush Schedule (-25% 納期短縮)' : 'Rush Schedule (-25% Delivery Time)'} (+${formatCurrency(pRush)})
+        </option>
+        <option value="superRush" ${curSchedVal === 'superRush' ? 'selected' : ''}>
+          ${isJa ? 'Super Rush Schedule (-50% 超特急短縮)' : 'Super Rush Schedule (-50% Delivery Time)'} (+${formatCurrency(pSuper)})
+        </option>
+      `;
+
+      // Delivery reference guideline badge
+      document.getElementById('badge-deliveryRef').innerText = PRICING_RULES.deliveryGuideline[type];
+    }
+
+    /* ----------------------------------------------------
+       Section 4: Dynamic Controls per Product Type
+    ---------------------------------------------------- */
+    function renderSection4Controls() {
+      const container = document.getElementById('sec4-views-container');
+      const subTitle = document.getElementById('sec4-subtitle');
+      const btnAdd = document.getElementById('btn-add-view');
+      const bulkNote = document.getElementById('sec4-bulk-note');
+      const isJa = currentLang === 'ja';
+
+      const typeNames = {
+        still: 'Still Image (Exterior Commercial, Exterior Residential, Interior Commercial, Interior Residential, Exterior Aerial)',
+        vr360: '360 VR image (Interior Commercial, Interior Residential)',
+        beforeAfterVr: 'Before/After 360 VR image (Exterior Commercial, Exterior Residential, Interior Commercial, Interior Residential, Exterior Aerial)',
+        photomatch: 'Photomatch Still image (Exterior Commercial, Exterior Residential, Interior Commercial, Interior Residential)',
+        animation: 'Animation (Walkthrough, Cinematic, Commercial, Residential, D5 or Unreal)',
+        shapespark: 'Shapespark (Virtual Walkthrough, Commercial, Residential & Factory)'
+      };
+      subTitle.innerText = typeNames[currentProductType];
+
+      // Bulk discount note only applicable to Still
+      if (currentProductType === 'still') {
+        bulkNote.classList.remove('hidden');
+      } else {
+        bulkNote.classList.add('hidden');
+      }
+
+      // Hide or show Add button for single-sequence products like Animation
+      if (currentProductType === 'animation') {
+        btnAdd.classList.add('hidden');
+      } else {
+        btnAdd.classList.remove('hidden');
+      }
+
+      container.innerHTML = '';
+      const list = productViewsState[currentProductType] || [];
+      const typologies = PRODUCT_TYPOLOGIES[currentProductType];
+
+      list.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'border border-slate-200 rounded-lg p-3.5 bg-slate-50/70 hover:border-slate-300 transition text-xs space-y-3';
+
+        const defaultHeaderLabel = currentProductType === 'animation'
+          ? 'Animation Sequence'
+          : (typologies[item.typology] ? typologies[item.typology][currentLang] : `View #${index + 1}`);
+        const headerDisplayTitle = item.viewName && item.viewName.trim() !== ''
+          ? item.viewName
+          : defaultHeaderLabel;
+
+        // Header
+        let cardHeader = `
+          <div class="flex items-center justify-between font-medium text-slate-800 pb-1.5 border-b border-slate-200">
+            <span class="flex items-center gap-1.5 font-bold">
+              <span class="w-5 h-5 rounded-full bg-slate-800 text-white flex items-center justify-center text-[10px]">${index + 1}</span>
+              <span id="card-title-${item.id}">${headerDisplayTitle}</span>
+            </span>
+            <div class="flex items-center gap-1">
+              ${currentProductType !== 'animation' ? `
+              <button onclick="duplicateViewItem('${item.id}')" title="Duplicate View" class="p-1 text-slate-500 hover:text-slate-800 rounded">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              </button>` : ''}
+              ${list.length > 1 ? `
+              <button onclick="removeViewItem('${item.id}')" title="Remove View" class="p-1 text-red-500 hover:text-red-700 rounded">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>` : ''}
+            </div>
+          </div>
+        `;
+
+        let fields = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">`;
+
+        // Editable Name of View (type in) for every item
+        fields += `
+          <div class="sm:col-span-2">
+            <label class="block font-medium text-slate-700 mb-0.5">${isJa ? 'Name of View / カット名称 (自由入力)' : 'Name of View (Type in)'}</label>
+            <input type="text"
+              placeholder="${isJa ? '例: 外観北東コーナー夕景 / 1階エントランスロビー' : 'e.g. Exterior North-East Corner / 1F Main Lobby'}"
+              value="${(item.viewName || '').replace(/"/g, '&quot;')}"
+              oninput="updateViewProp('${item.id}', 'viewName', this.value)"
+              class="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white text-slate-800 focus:outline-none focus:border-brand">
+          </div>
+        `;
+
+        // 1. STILL IMAGE
+        if (currentProductType === 'still') {
+          fields += `
+            <div class="sm:col-span-2">
+              <label class="block font-medium text-slate-600 mb-0.5">Camera View Typology</label>
+              <select onchange="updateViewProp('${item.id}', 'typology', this.value)" class="w-full px-2 py-1.5 border border-slate-300 rounded bg-white">
+                ${Object.entries(typologies).map(([k, v]) => `
+                  <option value="${k}" ${item.typology === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Time of Day</label>
+              <select onchange="updateViewProp('${item.id}', 'timeOfDay', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(TIME_OPTIONS).map(([k, v]) => `
+                  <option value="${k}" ${item.timeOfDay === k ? 'selected' : ''}>${v[currentLang]} ${v.price > 0 ? '(+' + formatCurrency(v.price) + ')' : ''}</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">People & Entourage</label>
+              <select onchange="updateViewProp('${item.id}', 'people', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(PEOPLE_OPTIONS_DEFAULT).map(([k, v]) => `
+                  <option value="${k}" ${item.people === k ? 'selected' : ''}>${v[currentLang]} ${v.price > 0 ? '(+' + formatCurrency(v.price) + ')' : ''}</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Background</label>
+              <select onchange="updateViewProp('${item.id}', 'background', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(BACKGROUND_OPTIONS).map(([k, v]) => `
+                  <option value="${k}" ${item.background === k ? 'selected' : ''}>${v[currentLang]} ${v.price > 0 ? '(+' + formatCurrency(v.price) + ')' : ''}</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Style & Tone</label>
+              <select onchange="updateViewProp('${item.id}', 'style', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(getStyleOptions('still')).map(([k, v]) => `
+                  <option value="${k}" ${item.style === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Output Resolution</label>
+              <select onchange="updateViewProp('${item.id}', 'resolution', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                <option value="res_standard" ${item.resolution === 'res_standard' ? 'selected' : ''}>Standard (under 2K) (+${formatCurrency(0)})</option>
+                <option value="res_4k" ${item.resolution === 'res_4k' ? 'selected' : ''}>High (up to 4K) (+${formatCurrency(5000)})</option>
+                <option value="res_special" ${item.resolution === 'res_special' ? 'selected' : ''}>Special (above 4K) (+${formatCurrency(10000)})</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Image Orientation & Ratio</label>
+              <select onchange="updateViewProp('${item.id}', 'orientation', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                <option value="landscape" ${item.orientation === 'landscape' ? 'selected' : ''}>Landscape (+0 JPY)</option>
+                <option value="portrait" ${item.orientation === 'portrait' ? 'selected' : ''}>Portrait (+0 JPY)</option>
+                <option value="special" ${item.orientation === 'special' ? 'selected' : ''}>Special Ratio (type in) (+0 JPY)</option>
+              </select>
+            </div>
+            ${item.orientation === 'special' ? `
+            <div class="sm:col-span-2">
+              <label class="block font-medium text-slate-600 mb-0.5">Custom Ratio Note</label>
+              <input type="text" placeholder="e.g. 16:9, 21:9, 1:1" value="${item.specialRatioText || ''}" oninput="updateViewProp('${item.id}', 'specialRatioText', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded">
+            </div>` : ''}
+          `;
+        }
+        
+        // 2. 360 VR, BEFORE/AFTER VR, PHOTOMATCH
+        else if (currentProductType === 'vr360' || currentProductType === 'beforeAfterVr' || currentProductType === 'photomatch') {
+          const styleOpts = getStyleOptions(currentProductType);
+          const highResPrice = currentProductType === 'photomatch' ? 10000 : 8000;
+          fields += `
+            <div class="sm:col-span-2">
+              <label class="block font-medium text-slate-600 mb-0.5">Camera View Typology</label>
+              <select onchange="updateViewProp('${item.id}', 'typology', this.value)" class="w-full px-2 py-1.5 border border-slate-300 rounded bg-white">
+                ${Object.entries(typologies).map(([k, v]) => `
+                  <option value="${k}" ${item.typology === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Time of Day</label>
+              <select onchange="updateViewProp('${item.id}', 'timeOfDay', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(TIME_OPTIONS).map(([k, v]) => `
+                  <option value="${k}" ${item.timeOfDay === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">People & Entourage</label>
+              <select onchange="updateViewProp('${item.id}', 'people', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(PEOPLE_OPTIONS_DEFAULT).map(([k, v]) => `
+                  <option value="${k}" ${item.people === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Style & Tone</label>
+              <select onchange="updateViewProp('${item.id}', 'style', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(styleOpts).map(([k, v]) => `
+                  <option value="${k}" ${item.style === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Output Resolution</label>
+              <select onchange="updateViewProp('${item.id}', 'resolution', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                <option value="vr_4k" ${item.resolution === 'vr_4k' ? 'selected' : ''}>Standard (under 4K) (+${formatCurrency(0)})</option>
+                <option value="vr_8k" ${item.resolution === 'vr_8k' ? 'selected' : ''}>High (up to 8K) (+${formatCurrency(highResPrice)})</option>
+              </select>
+            </div>
+          `;
+        }
+
+        // 3. ANIMATION
+        else if (currentProductType === 'animation') {
+          const styleOpts = getStyleOptions('animation');
+          fields += `
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Animation Length</label>
+              <select onchange="updateViewProp('${item.id}', 'length', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(ANIMATION_PRICING.length).map(([k, v]) => `
+                  <option value="${k}" ${item.length === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Camera Path Style</label>
+              <select onchange="updateViewProp('${item.id}', 'pathStyle', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(ANIMATION_PRICING.pathStyle).map(([k, v]) => `
+                  <option value="${k}" ${item.pathStyle === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Workflow & Software</label>
+              <select onchange="updateViewProp('${item.id}', 'workflow', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(ANIMATION_PRICING.workflow).map(([k, v]) => `
+                  <option value="${k}" ${item.workflow === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">People & Entourage</label>
+              <select onchange="updateViewProp('${item.id}', 'people', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(ANIMATION_PRICING.people).map(([k, v]) => `
+                  <option value="${k}" ${item.people === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Style & Tone</label>
+              <select onchange="updateViewProp('${item.id}', 'style', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(styleOpts).map(([k, v]) => `
+                  <option value="${k}" ${item.style === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Output Resolution</label>
+              <select onchange="updateViewProp('${item.id}', 'resolution', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(ANIMATION_PRICING.resolution).map(([k, v]) => `
+                  <option value="${k}" ${item.resolution === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+          `;
+        }
+
+        // 4. SHAPESPARK
+        else if (currentProductType === 'shapespark') {
+          fields += `
+            <div class="sm:col-span-2">
+              <label class="block font-medium text-slate-600 mb-0.5">Building Typology</label>
+              <select onchange="updateViewProp('${item.id}', 'typology', this.value)" class="w-full px-2 py-1.5 border border-slate-300 rounded bg-white">
+                ${Object.entries(typologies).map(([k, v]) => `
+                  <option value="${k}" ${item.typology === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">Time of Day</label>
+              <select onchange="updateViewProp('${item.id}', 'timeOfDay', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                ${Object.entries(TIME_OPTIONS).map(([k, v]) => `
+                  <option value="${k}" ${item.timeOfDay === k ? 'selected' : ''}>${v[currentLang]} (+${formatCurrency(v.price)})</option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-600 mb-0.5">People & Entourage</label>
+              <select onchange="updateViewProp('${item.id}', 'people', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                <option value="none" ${item.people === 'none' ? 'selected' : ''}>None (Clean Architecture) (+${formatCurrency(0)})</option>
+                <option value="visualizer" ${item.people === 'visualizer' ? 'selected' : ''}>Up to Visualizer (no changes from client) (+${formatCurrency(0)})</option>
+                <option value="silhouettes" ${item.people === 'silhouettes' ? 'selected' : ''}>Silhouettes (+${formatCurrency(3000)})</option>
+                <option value="library" ${item.people === 'library' ? 'selected' : ''}>Library 3D People (client choose from library) (+${formatCurrency(5000)})</option>
+                <option value="custom" ${item.people === 'custom' ? 'selected' : ''}>Custom People Still (people instruction) (+${formatCurrency(25000)})</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block font-medium text-slate-600 mb-0.5">Viewing Device</label>
+              <select onchange="updateViewProp('${item.id}', 'device', this.value)" class="w-full px-2 py-1 border border-slate-300 rounded bg-white">
+                <option value="standard" ${item.device === 'standard' ? 'selected' : ''}>Standard (no optimised) (+${formatCurrency(0)})</option>
+                <option value="optimized" ${item.device === 'optimized' ? 'selected' : ''}>For mobile and PC (model optimised) (+${formatCurrency(20000)})</option>
+              </select>
+            </div>
+          `;
+        }
+
+        fields += `</div>`;
+        card.innerHTML = cardHeader + fields;
+        container.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    function addViewItem() {
+      const list = productViewsState[currentProductType];
+      const newId = 'view-' + Date.now();
+      const firstTypoKey = Object.keys(PRODUCT_TYPOLOGIES[currentProductType])[0];
+      const nextNum = list.length + 1;
+
+      if (currentProductType === 'still') {
+        list.push({
+          id: newId,
+          viewName: `View #${nextNum}`,
+          typology: firstTypoKey,
+          timeOfDay: 'day',
+          people: 'none',
+          background: 'clear',
+          style: 'japanese_editorial',
+          resolution: 'res_standard',
+          orientation: 'landscape',
+          specialRatioText: ''
+        });
+      } else if (currentProductType === 'shapespark') {
+        list.push({
+          id: newId,
+          viewName: `Walkthrough Space #${nextNum}`,
+          typology: firstTypoKey,
+          timeOfDay: 'day',
+          people: 'none',
+          device: 'standard'
+        });
+      } else {
+        list.push({
+          id: newId,
+          viewName: `View #${nextNum}`,
+          typology: firstTypoKey,
+          timeOfDay: 'day',
+          people: 'none',
+          style: 'japanese_editorial',
+          resolution: 'vr_4k'
+        });
+      }
+
+      renderSection4Controls();
+      updateDocument();
+    }
+
+    function duplicateViewItem(id) {
+      const list = productViewsState[currentProductType];
+      const existing = list.find(v => v.id === id);
+      if (!existing) return;
+      const cloneName = existing.viewName ? `${existing.viewName} (Copy)` : '';
+      const clone = { ...existing, id: 'view-' + Date.now(), viewName: cloneName };
+      list.push(clone);
+      renderSection4Controls();
+      updateDocument();
+    }
+
+    function removeViewItem(id) {
+      const list = productViewsState[currentProductType];
+      if (list.length <= 1) return;
+      productViewsState[currentProductType] = list.filter(v => v.id !== id);
+      renderSection4Controls();
+      updateDocument();
+    }
+
+    function updateViewProp(id, prop, val) {
+      const list = productViewsState[currentProductType];
+      const target = list.find(v => v.id === id);
+      if (target) {
+        target[prop] = val;
+        if (prop === 'viewName') {
+          const titleSpan = document.getElementById(`card-title-${id}`);
+          if (titleSpan) {
+            const typologies = PRODUCT_TYPOLOGIES[currentProductType];
+            const fallback = currentProductType === 'animation'
+              ? 'Animation Sequence'
+              : (typologies[target.typology] ? typologies[target.typology][currentLang] : 'View');
+            titleSpan.innerText = val.trim() !== '' ? val : fallback;
+          }
+        } else if (prop === 'orientation' || prop === 'typology') {
+          renderSection4Controls();
+        }
+        updateDocument();
+      }
+    }
+
+    /* ----------------------------------------------------
+       Document Quotation Generator & Calculation
+    ---------------------------------------------------- */
+    function handleBuildingTypeChange() {
+      const sel = document.getElementById('cfg-buildingType');
+      const customInput = document.getElementById('cfg-buildingTypeCustom');
+      if (sel.value === 'custom') {
+        customInput.classList.remove('hidden');
+        customInput.focus();
+      } else {
+        customInput.classList.add('hidden');
+      }
+      updateDocument();
+    }
+
+    function handleFloorAreaChange() {
+      const sel = document.getElementById('cfg-floorArea');
+      const customInput = document.getElementById('cfg-floorAreaCustom');
+      if (sel.value === 'custom') {
+        customInput.classList.remove('hidden');
+        customInput.focus();
+      } else {
+        customInput.classList.add('hidden');
+      }
+      updateDocument();
+    }
+
+    function handleTotalFloorsChange() {
+      const sel = document.getElementById('cfg-totalFloors');
+      const customInput = document.getElementById('cfg-totalFloorsCustom');
+      if (sel.value === 'custom') {
+        customInput.classList.remove('hidden');
+        customInput.focus();
+      } else {
+        customInput.classList.add('hidden');
+      }
+      updateDocument();
+    }
+
+    function updateDocument() {
+      const isJa = currentLang === 'ja';
+      const type = currentProductType;
+
+      // Section 1 Metadata
+      const pTitle = document.getElementById('cfg-projectTitle').value;
+      const pCompany = document.getElementById('cfg-company').value;
+      const pObjective = document.getElementById('cfg-objective').value;
+      const bldgSel = document.getElementById('cfg-buildingType').value;
+      const pBldgType = bldgSel === 'custom'
+        ? (document.getElementById('cfg-buildingTypeCustom').value.trim() || 'Custom Building')
+        : bldgSel;
+
+      const areaSel = document.getElementById('cfg-floorArea').value;
+      const pFloorArea = areaSel === 'custom'
+        ? (document.getElementById('cfg-floorAreaCustom').value.trim() || 'Custom Area')
+        : areaSel;
+
+      const floorsSel = document.getElementById('cfg-totalFloors').value;
+      const pTotalFloors = floorsSel === 'custom'
+        ? (document.getElementById('cfg-totalFloorsCustom').value.trim() || 'Custom Floors')
+        : floorsSel;
+
+      const pPreparedBy = document.getElementById('cfg-preparedBy').value;
+      const pRefNo = document.getElementById('cfg-refNo').value;
+      const pIssueDate = document.getElementById('cfg-issueDate').value;
+      const pDeliveryDate = document.getElementById('cfg-deliveryDate').value;
+
+      document.getElementById('doc-company').innerText = isJa ? pCompany : `To: ${pCompany.replace(/御中/g, '').trim()} (Client)`;
+      document.getElementById('doc-projectTitle').innerText = pTitle;
+      document.getElementById('doc-objective').innerText = pObjective;
+      document.getElementById('doc-buildingType').innerText = pBldgType;
+      document.getElementById('doc-areaFloors').innerText = `${pFloorArea} / ${pTotalFloors}`;
+      document.getElementById('doc-refNo').innerText = pRefNo;
+      const appendixRef = document.getElementById('doc-appendix-refNo');
+      if (appendixRef) appendixRef.innerText = pRefNo;
+      document.getElementById('doc-preparedBy').innerText = pPreparedBy;
+      document.getElementById('doc-issueDate').innerText = pIssueDate ? formatDate(pIssueDate) : '';
+      document.getElementById('doc-deliveryDate').innerText = pDeliveryDate ? formatDate(pDeliveryDate) : (isJa ? '協議の上決定' : 'Upon discussion');
+
+      // Product Badge
+      const typeBadgeNames = {
+        still: 'STILL IMAGE',
+        vr360: '360 VR IMAGE',
+        beforeAfterVr: 'BEFORE/AFTER 360 VR IMAGE',
+        photomatch: 'PHOTOMATCH STILL IMAGE',
+        animation: 'ANIMATION',
+        shapespark: 'SHAPESPARK (VIRTUAL WALKTHROUGH)'
+      };
+      document.getElementById('doc-product-badge').innerText = typeBadgeNames[type];
+
+      // Assemble Breakdown Table Items
+      const lineItems = [];
+      let subtotalJPY = 0;
+
+      // 1. CONSOLIDATED SECTION 3 ITEM: Data Analysis, Base 3D Modeling & Architectural Details
+      const modelLvlKey = document.getElementById('cfg-baseModelLevel').value;
+      const modelFee = PRICING_RULES.baseModeling[modelLvlKey][type];
+      const modelLabels = {
+        lvl1: { ja: 'Level-1 (完成精緻3Dデータ支給)', en: 'Level-1 (Final detail 3D model provided)' },
+        lvl2: { ja: 'Level-2 (概略3Dデータ支給)', en: 'Level-2 (Schematic 3D data provided)' },
+        lvl3: { ja: 'Level-3 (2D図面モデリング)', en: 'Level-3 (Modelling from 2D drawing)' },
+        lvl4: { ja: 'Level-4 (手描きスケッチモデリング)', en: 'Level-4 (Modelling from sketch)' }
+      };
+
+      const hasArchDetails = document.getElementById('cfg-archDetails').checked;
+      const archFee = hasArchDetails ? PRICING_RULES.archDetails[type] : 0;
+      const dataAnalysisFee = 10000;
+
+      const consolidatedSection3Fee = dataAnalysisFee + modelFee + archFee;
+      const consolidatedTitle = isJa 
+        ? 'データ分析・ベース3Dモデリング・建築意匠構築' 
+        : 'Data Analysis, Base 3D Structural Modelling & Architectural Details';
+      
+      const archDetailNote = hasArchDetails 
+        ? (isJa ? ` + 建築意匠ディテール追加(+${formatCurrency(archFee)})` : ` + Architectural Details Included(+${formatCurrency(archFee)})`)
+        : '';
+
+      const consolidatedSpec = isJa
+        ? `データ分析要件精査 (¥10,000) + ${modelLabels[modelLvlKey].ja} (+${formatCurrency(modelFee)})${archDetailNote}`
+        : `Data Analysis (¥10,000) + ${modelLabels[modelLvlKey].en} (+${formatCurrency(modelFee)})${archDetailNote}`;
+
+      lineItems.push({
+        title: consolidatedTitle,
+        spec: consolidatedSpec,
+        qty: isJa ? '1 式' : '1 lump',
+        unitPrice: consolidatedSection3Fee,
+        total: consolidatedSection3Fee
+      });
+
+      // 2. Furniture Options
+      const libFurnVal = document.getElementById('cfg-libraryFurniture').value;
+      if (libFurnVal === 'enhanced') {
+        lineItems.push({
+          title: isJa ? '拡張ライブラリ家具選定・配置 (Enhanced Library Furniture)' : 'Enhanced Library Furniture Selection',
+          spec: isJa ? 'ハイクラス・デザイナーズ家具アセット選定および空間コーディネート (+¥10,000)' : 'Premium interior furniture library asset selection & coordination (+¥10,000)',
+          qty: isJa ? '1 式' : '1 lump',
+          unitPrice: 10000,
+          total: 10000
+        });
+      }
+
+      const customFurnVal = document.getElementById('cfg-customFurniture').value;
+      if (customFurnVal === 'basic') {
+        lineItems.push({
+          title: isJa ? '簡易特注・造作家具モデリング (Basic Custom Loose Furniture)' : 'Basic Custom Loose Furniture Modelling',
+          spec: isJa ? '象徴的な造作テーブル・受付カウンター等の特注3Dモデリング (+¥15,000)' : 'Simple bespoke pieces e.g., feature tables, reception counters (+¥15,000)',
+          qty: isJa ? '1 式' : '1 lump',
+          unitPrice: 15000,
+          total: 15000
+        });
+      } else if (customFurnVal === 'full') {
+        lineItems.push({
+          title: isJa ? 'フルカスタム特注家具パッケージ (Full Custom Loose Furniture)' : 'Full Custom Loose Furniture Modelling',
+          spec: isJa ? '全居室・共用部特注家具・フルディテール造作モデリングパッケージ (+¥30,000)' : 'Detailed bespoke furniture package per project type (+¥30,000)',
+          qty: isJa ? '1 式' : '1 lump',
+          unitPrice: 30000,
+          total: 30000
+        });
+      }
+
+      // 3. Schedule / Turnaround
+      const schedKey = document.getElementById('cfg-schedule').value;
+      const schedFee = PRICING_RULES.schedule[schedKey][type];
+      const schedLabels = {
+        normal: { ja: '通常工程スケジュール (Standard Schedule)', en: 'Standard Working Schedule' },
+        rush: { ja: '特急制作進行割増 (Rush Schedule: -25% 納期短縮)', en: 'Rush Schedule (-25% Delivery Time)' },
+        superRush: { ja: '超特急制作進行割増 (Super Rush Schedule: -50% 納期短縮)', en: 'Super Rush Schedule (-50% Delivery Time)' }
+      };
+
+      const tentativeTimeline = PRICING_RULES.deliveryGuideline[type];
+      lineItems.push({
+        title: schedLabels[schedKey][currentLang],
+        spec: isJa 
+          ? `目安標準工程: ${tentativeTimeline} (※案件規模により調整)` 
+          : `Tentative Working Schedule: ${tentativeTimeline} (subject to project scope)`,
+        qty: isJa ? '1 式' : '1 lump',
+        unitPrice: schedFee,
+        total: schedFee
+      });
+
+      // 4. Section 4: CG Production Items
+      const viewList = productViewsState[type] || [];
+      const typologies = PRODUCT_TYPOLOGIES[type];
+      let viewsSubtotalJPY = 0;
+
+      viewList.forEach((v, idx) => {
+        let viewTitle = '';
+        let viewSpec = '';
+        let viewUnitCost = 0;
+        const customViewLabel = v.viewName && v.viewName.trim() !== '' ? ` [${v.viewName.trim()}]` : '';
+        const styleOpts = getStyleOptions(type);
+
+        if (type === 'still') {
+          const typo = typologies[v.typology] || { ja: 'Still View', en: 'Still View', price: 15000 };
+          const time = TIME_OPTIONS[v.timeOfDay] || { price: 0, ja: '', en: '' };
+          const ppl = PEOPLE_OPTIONS_DEFAULT[v.people] || { price: 0, ja: '', en: '' };
+          const bg = BACKGROUND_OPTIONS[v.background] || { price: 0, ja: '', en: '' };
+          const sty = styleOpts[v.style] || { price: 0, ja: '', en: '' };
+
+          const resPrices = { res_standard: 0, res_4k: 5000, res_special: 10000 };
+          const resLabels = { res_standard: '<2K Standard', res_4k: '4K High', res_special: '>4K Special' };
+          const rFee = resPrices[v.resolution] || 0;
+          const ratioDesc = v.orientation === 'special' ? `Ratio: ${v.specialRatioText || 'Custom'}` : v.orientation;
+
+          viewUnitCost = typo.price + time.price + ppl.price + bg.price + sty.price + rFee;
+          viewTitle = `Still View #${idx + 1}${customViewLabel}: ${typo[currentLang]}`;
+          viewSpec = `${time[currentLang]} | ${ppl[currentLang]} | Bg: ${bg[currentLang]} | ${sty[currentLang]} | Res: ${resLabels[v.resolution]} (${ratioDesc})`;
+        }
+        else if (type === 'vr360' || type === 'beforeAfterVr' || type === 'photomatch') {
+          const typo = typologies[v.typology] || { ja: 'VR View', en: 'VR View', price: 15000 };
+          const time = TIME_OPTIONS[v.timeOfDay] || { price: 0, ja: '', en: '' };
+          const ppl = PEOPLE_OPTIONS_DEFAULT[v.people] || { price: 0, ja: '', en: '' };
+          const sty = styleOpts[v.style] || { price: 0, ja: '', en: '' };
+          const highResPrice = type === 'photomatch' ? 10000 : 8000;
+          const rFee = v.resolution === 'vr_8k' ? highResPrice : 0;
+
+          viewUnitCost = typo.price + time.price + ppl.price + sty.price + rFee;
+          const prefixes = {
+            vr360: '360 VR',
+            beforeAfterVr: 'Before/After 360 VR',
+            photomatch: 'Photomatch Still'
+          };
+          viewTitle = `${prefixes[type]} #${idx + 1}${customViewLabel}: ${typo[currentLang]}`;
+          viewSpec = `${time[currentLang]} | ${ppl[currentLang]} | ${sty[currentLang]} | ${v.resolution === 'vr_8k' ? `8K High (+${formatCurrency(highResPrice)})` : '<4K Standard'}`;
+        }
+        else if (type === 'animation') {
+          const lenObj = ANIMATION_PRICING.length[v.length] || ANIMATION_PRICING.length['60_90'];
+          const pathObj = ANIMATION_PRICING.pathStyle[v.pathStyle] || ANIMATION_PRICING.pathStyle.walkthrough;
+          const wfObj = ANIMATION_PRICING.workflow[v.workflow] || ANIMATION_PRICING.workflow.max_sketch_d5;
+          const pplObj = ANIMATION_PRICING.people[v.people] || ANIMATION_PRICING.people.none;
+          const styObj = styleOpts[v.style] || { price: 0, ja: '', en: '' };
+          const resObj = ANIMATION_PRICING.resolution[v.resolution] || ANIMATION_PRICING.resolution.anim_2k;
+
+          viewUnitCost = lenObj.price + pathObj.price + wfObj.price + pplObj.price + styObj.price + resObj.price;
+          viewTitle = `Animation${customViewLabel}: ${pathObj[currentLang]} (${lenObj[currentLang]})`;
+          viewSpec = `Workflow: ${wfObj[currentLang]} (+${formatCurrency(wfObj.price)}) | People: ${pplObj[currentLang]} (+${formatCurrency(pplObj.price)}) | ${styObj[currentLang]} | ${resObj[currentLang]} (+${formatCurrency(resObj.price)})`;
+        }
+        else if (type === 'shapespark') {
+          const typo = typologies[v.typology] || { ja: 'Commercial', en: 'Commercial', price: 15000 };
+          const time = TIME_OPTIONS[v.timeOfDay] || { price: 0, ja: '', en: '' };
+          const pplPrices = { none: 0, visualizer: 0, silhouettes: 3000, library: 5000, custom: 25000 };
+          const pFee = pplPrices[v.people] || 0;
+          const devFee = v.device === 'optimized' ? 20000 : 0;
+
+          viewUnitCost = typo.price + time.price + pFee + devFee;
+          viewTitle = `Shapespark Walkthrough #${idx + 1}${customViewLabel}: ${typo[currentLang]}`;
+          viewSpec = `${time[currentLang]} | People: (+${formatCurrency(pFee)}) | ${v.device === 'optimized' ? 'Mobile & PC Model Optimised (+¥20,000)' : 'Standard (no optimised)'}`;
+        }
+
+        viewsSubtotalJPY += viewUnitCost;
+
+        lineItems.push({
+          title: viewTitle,
+          spec: viewSpec,
+          qty: isJa ? '1 式' : '1 lump',
+          unitPrice: viewUnitCost,
+          total: viewUnitCost,
+          isViewItem: true
+        });
+      });
+
+      // Bulk discount for Still (2 views and above -> -20% on views total)
+      let bulkDiscountJPY = 0;
+      if (type === 'still' && viewList.length >= 2) {
+        bulkDiscountJPY = Math.round(viewsSubtotalJPY * 0.20);
+      }
+
+      // 5. Section 5: Missing and incomplete Data surcharge
+      const hasDroneSurcharge = document.getElementById('cfg-droneCompSurcharge').checked;
+      if (hasDroneSurcharge) {
+        lineItems.push({
+          title: isJa ? 'データ欠落・不備追加費用 (Missing and incomplete Data surcharge)' : 'Missing and incomplete Data surcharge',
+          spec: isJa ? '焦点距離パラメータ・撮影日時未記載の敷地/ドローン写真合成キャリブレーション補正費 (+¥20,000)' : 'Compositing requires high-resolution site/drone photography with documented focal parameters and capture time (+20,000 JPY)',
+          qty: isJa ? '1 式' : '1 lump',
+          unitPrice: 20000,
+          total: 20000
+        });
+      }
+
+      // Render Breakdown Table
+      const tableBody = document.getElementById('doc-table-body');
+      tableBody.innerHTML = '';
+      subtotalJPY = lineItems.reduce((acc, it) => acc + it.total, 0);
+
+      lineItems.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-slate-50';
+        row.innerHTML = `
+          <td class="py-2 px-2.5 text-center font-mono text-slate-500">${index + 1}</td>
+          <td class="py-2 px-3">
+            <div class="font-bold text-slate-900">${item.title}</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">${item.spec}</div>
+          </td>
+          <td class="py-2 px-2 text-center font-mono">${item.qty}</td>
+          <td class="py-2 px-3 text-right font-mono">${formatCurrency(item.unitPrice)}</td>
+          <td class="py-2 px-3 text-right font-mono font-bold text-slate-900">${formatCurrency(item.total)}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      // Discount Row display
+      const discountRow = document.getElementById('doc-discount-row');
+      if (bulkDiscountJPY > 0) {
+        discountRow.classList.remove('hidden');
+        document.getElementById('doc-discount-label').innerText = isJa 
+          ? `Still 複数カット一括割引 (2点以上・20% OFF)` 
+          : `Bulk Order Discount (2+ Views: -20%)`;
+        document.getElementById('doc-discount-amount').innerText = `-${formatCurrency(bulkDiscountJPY)}`;
+      } else {
+        discountRow.classList.add('hidden');
+      }
+
+      // Final calculations
+      const netSubtotalJPY = subtotalJPY - bulkDiscountJPY;
+      const includeTax = document.getElementById('cfg-taxToggle').checked;
+      const taxJPY = includeTax ? Math.round(netSubtotalJPY * 0.10) : 0;
+      const grandTotalJPY = netSubtotalJPY + taxJPY;
+
+      // Update Summary UI
+      document.getElementById('doc-subtotal').innerText = formatCurrency(subtotalJPY);
+      document.getElementById('doc-tax').innerText = includeTax ? formatCurrency(taxJPY) : (isJa ? '対象外' : 'N/A');
+      document.getElementById('doc-total-bottom').innerText = formatCurrency(grandTotalJPY);
+      document.getElementById('doc-grandTotal').innerText = formatCurrency(grandTotalJPY);
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      if (currentLang === 'ja') {
+        const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+        return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日（${weekdays[d.getDay()]}）`;
+      }
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function setCurrency(curr) {
+      currentCurrency = curr;
+      document.getElementById('btn-curr-jpy').className = curr === 'JPY' ? 'px-2.5 py-1 rounded font-medium transition bg-slate-700 text-white shadow-xs' : 'px-2.5 py-1 rounded font-medium transition text-slate-400 hover:text-white';
+      document.getElementById('btn-curr-usd').className = curr === 'USD' ? 'px-2.5 py-1 rounded font-medium transition bg-slate-700 text-white shadow-xs' : 'px-2.5 py-1 rounded font-medium transition text-slate-400 hover:text-white';
+      
+      populateSection3Dropdowns();
+      renderSection4Controls();
+      updateDocument();
+    }
+
+    function setLang(lang) {
+      currentLang = lang;
+      document.getElementById('btn-lang-ja').className = lang === 'ja' ? 'px-2.5 py-1 rounded font-medium transition bg-slate-700 text-white shadow-xs' : 'px-2.5 py-1 rounded font-medium transition text-slate-400 hover:text-white';
+      document.getElementById('btn-lang-en').className = lang === 'en' ? 'px-2.5 py-1 rounded font-medium transition bg-slate-700 text-white shadow-xs' : 'px-2.5 py-1 rounded font-medium transition text-slate-400 hover:text-white';
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (I18N[lang] && I18N[lang][key]) {
+          el.innerHTML = I18N[lang][key];
+        }
+      });
+
+      document.getElementById('doc-main-title').innerText = I18N[lang].docTitle;
+      document.getElementById('doc-sub-title').innerText = I18N[lang].docSubTitle;
+
+      updateHankoStamp();
+      populateSection3Dropdowns();
+      renderSection4Controls();
+      updateDocument();
+    }
+
+    function updateHankoStamp() {
+      const stampEl = document.getElementById('doc-hanko-stamp');
+      if (!stampEl) return;
+      if (currentLang === 'en') {
+        stampEl.innerHTML = `
+          <span class="text-[9px] tracking-normal font-sans font-bold">MASG</span>
+          <span class="text-[7px] tracking-normal font-sans">OFFICIAL</span>
+          <span class="text-[8px] tracking-normal font-sans font-bold">SEAL</span>
+        `;
+      } else {
+        stampEl.innerHTML = `
+          <span>ＭＡ</span>
+          <span>ＳＧ</span>
+          <span class="text-[9px] -mt-0.5">之印</span>
+        `;
+      }
+    }
+
+    function resetDefaults() {
+      document.getElementById('cfg-projectTitle').value = '（仮称）渋谷神南三丁目商業複合施設 CGビジュアライゼーション業務';
+      document.getElementById('cfg-company').value = '株式会社 大林都市設計コンサルタンツ 御中';
+      document.getElementById('cfg-objective').value = '商業施設リーシングプロモーション・行政協議提出用';
+      document.getElementById('cfg-buildingType').value = 'Commercial';
+      document.getElementById('cfg-buildingTypeCustom').value = '';
+      document.getElementById('cfg-buildingTypeCustom').classList.add('hidden');
+      document.getElementById('cfg-floorArea').value = 'Large: 2,000 – 5,000 sqm';
+      document.getElementById('cfg-floorAreaCustom').value = '';
+      document.getElementById('cfg-floorAreaCustom').classList.add('hidden');
+      document.getElementById('cfg-totalFloors').value = '5F';
+      document.getElementById('cfg-totalFloorsCustom').value = '';
+      document.getElementById('cfg-totalFloorsCustom').classList.add('hidden');
+      document.getElementById('cfg-preparedBy').value = 'Kaung Htet San (CG Director)';
+      document.getElementById('cfg-archDetails').checked = true;
+      document.getElementById('cfg-libraryFurniture').value = 'standard';
+      document.getElementById('cfg-customFurniture').value = 'none';
+      document.getElementById('cfg-taxToggle').checked = true;
+      document.getElementById('cfg-droneCompSurcharge').checked = false;
+
+      const stillRadio = document.querySelector('input[name="productType"][value="still"]');
+      if (stillRadio) stillRadio.checked = true;
+      changeProductType('still');
+      regenerateRefNo(true);
+    }
+
+    function triggerLogoUpload() {
+      const input = document.getElementById('custom-logo-upload');
+      if (input) input.click();
+    }
+
+    function handleLogoUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        document.querySelectorAll('.masg-default-svg').forEach(svg => svg.classList.add('hidden'));
+        document.querySelectorAll('.masg-custom-img').forEach(img => {
+          img.src = dataUrl;
+          img.classList.remove('hidden');
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    /* ----------------------------------------------------
+       Direct A4 PDF Export Engine (html2canvas + jsPDF)
+       Renders Page 1 (Quotation) + Page 2 (Appendix Terms)
+    ---------------------------------------------------- */
+    async function exportToPDF() {
+      const btn = document.getElementById('btn-export-pdf');
+      const txt = document.getElementById('txt-export-pdf');
+      const paper1 = document.getElementById('quotation-paper');
+      const paper2 = document.getElementById('terms-appendix-paper');
+      if (!paper1) return;
+
+      const originalLabel = I18N[currentLang].exportPdf;
+      const loadingLabel = I18N[currentLang].exportingPdf;
+
+      try {
+        btn.disabled = true;
+        btn.classList.add('opacity-75', 'cursor-wait');
+        if (txt) txt.innerText = loadingLabel;
+
+        // Build clean filename from Ref No. and Project Name
+        const refNo = (document.getElementById('cfg-refNo').value || 'MASG-Estimate').trim();
+        const rawClient = (document.getElementById('cfg-company').value || 'Client')
+          .replace(/御中/g, '')
+          .replace(/[\\/:*?"<>|]/g, '')
+          .trim()
+          .slice(0, 30);
+        const filename = `${refNo}_${rawClient || 'Quotation'}.pdf`;
+
+        if (typeof window.html2canvas !== 'function' || !window.jspdf) {
+          window.print();
+          return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 8;
+        const usableWidth = pageWidth - margin * 2;
+        const usableHeight = pageHeight - margin * 2;
+
+        // Helper to render any sheet element and append to jsPDF
+        const renderSheetToPdf = async (sheetEl, isNewPage) => {
+          const canvas = await window.html2canvas(sheetEl, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            onclone: function(clonedDoc) {
+              const clonedSheet = clonedDoc.getElementById(sheetEl.id);
+              if (clonedSheet) {
+                clonedSheet.style.boxShadow = 'none';
+                clonedSheet.style.border = 'none';
+                clonedSheet.style.width = '794px';
+                clonedSheet.style.maxWidth = '794px';
+                clonedSheet.style.margin = '0 auto';
+                clonedSheet.style.padding = '28px 32px';
+              }
+              const vectorDef = clonedDoc.getElementById('masg-logo-vector');
+              const clipDef = clonedDoc.getElementById('masg-outer-clip');
+              if (vectorDef && clipDef) {
+                clonedDoc.querySelectorAll('svg.masg-default-svg').forEach(svgEl => {
+                  svgEl.innerHTML = `<defs>${clipDef.outerHTML}</defs>${vectorDef.innerHTML}`;
+                });
+              }
+            }
+          });
+
+          const imgData = canvas.toDataURL('image/jpeg', 0.98);
+          const imgHeight = (canvas.height * usableWidth) / canvas.width;
+          let heightLeft = imgHeight;
+          let position = margin;
+
+          if (isNewPage) {
+            pdf.addPage();
+          }
+
+          pdf.addImage(imgData, 'JPEG', margin, position, usableWidth, imgHeight);
+          heightLeft -= usableHeight;
+
+          while (heightLeft > 2) {
+            position = heightLeft - imgHeight + margin;
+            pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', margin, position, usableWidth, imgHeight);
+            heightLeft -= usableHeight;
+          }
+        };
+
+        // Render Page 1: Quotation Breakdown
+        await renderSheetToPdf(paper1, false);
+
+        // Render Page 2: Subsequent Appendix Page (Terms & Production Guidelines)
+        if (paper2) {
+          await renderSheetToPdf(paper2, true);
+        }
+
+        pdf.save(filename);
+      } catch (err) {
+        console.warn('Fallback to print dialog:', err);
+        window.print();
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-75', 'cursor-wait');
+        if (txt) txt.innerText = originalLabel;
+      }
+    }
+  </script>
+</body>
+</html>
